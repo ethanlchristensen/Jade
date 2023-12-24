@@ -1,17 +1,19 @@
 cmake_minimum_required(VERSION 3.22)
 project(Jade VERSION 1.0 DESCRIPTION "Jade :-)")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(DPP)
 
-#find_package(dpp CONFIG REQUIRED)
-#target_link_libraries(Jade PRIVATE dpp::dpp)
+# find dpp
+find_path(DPP_INCLUDE_DIR NAMES dpp/dpp.h HINTS ${DPP_ROOT_DIR})
+find_library(DPP_LIBRARIES NAMES dpp "libdpp.a" HINTS ${DPP_ROOT_DIR})
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(DPP DEFAULT_MSG DPP_LIBRARIES DPP_INCLUDE_DIR)
+find_package(DPP)
 
 if (DPP_FOUND)
     message("DPP FOUND!")
 else()
     message("DPP NOT FOUND!")
 endif()
-
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 
