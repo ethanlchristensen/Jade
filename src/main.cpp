@@ -2,10 +2,13 @@
 #include <dpp/dpp.h>
 
 int main(int argc, char *argv[]) {
-    for (int i = 0; i < argc; i++) {
-        printf("argv[%d] = %s\n", i, argv[i]);
+    if (argc != 2) {
+        std::cout << "Bot token must be provided as command line arg!\n";
+        exit(1);
     }
-    dpp::cluster bot("<token>");
+
+    dpp::cluster bot(argv[1]);
+
     bot.on_log(dpp::utility::cout_logger());
     bot.on_slashcommand([&bot](const dpp::slashcommand_t& event) {
         std::string called_command = event.command.get_command_name();

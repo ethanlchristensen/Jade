@@ -33,3 +33,4 @@
 .idea/
 cmake*/
 ignore.txt
+.vscode/
