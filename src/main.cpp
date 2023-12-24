@@ -1,8 +1,11 @@
 #include <iostream>
 #include <dpp/dpp.h>
 
-int main() {
-    dpp::cluster bot("MTE4Njc3Nzg3NTEwMjMwNjM1NA.GMkn8i.skYfkhn9ZQt21K_8kgE8djhPKCAI2k7GxltlFI");
+int main(int argc, char *argv[]) {
+    for (int i = 0; i < argc; i++) {
+        printf("argv[%d] = %s\n", i, argv[i]);
+    }
+    dpp::cluster bot("<token>");
     bot.on_log(dpp::utility::cout_logger());
     bot.on_slashcommand([&bot](const dpp::slashcommand_t& event) {
         std::string called_command = event.command.get_command_name();
