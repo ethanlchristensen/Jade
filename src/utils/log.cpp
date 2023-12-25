@@ -6,9 +6,10 @@
 
 void timed_log(const std::string& content) {
     auto now = std::chrono::system_clock::now();
-    std::time_t date_time = std::chrono::system_clock::to_time_t(now);
-    std::tm* local_time = std::localtime(&date_time);
+    std::time_t current_time = std::chrono::system_clock::to_time_t(now);
+    std::tm local_time{};
+    localtime_s(&local_time, &current_time);
     char buffer[100];
-    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", local_time);
-    std::cout << buffer << ": " << content << std::endl;
+    std::strftime(buffer, sizeof(buffer), "[%a %b %d %H:%M:%S %Y] ", &local_time);
+    std::cout << buffer << content << std::endl;
 }

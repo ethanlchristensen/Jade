@@ -20,7 +20,8 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/utils/utils.h
         src/commands/nolan.cpp
         src/commands/clear.cpp
-        src/utils/log.cpp
+        src/commands/echo.cpp
+        src/commands/echo.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} ${DPP_LIBRARIES})

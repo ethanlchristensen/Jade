@@ -20,22 +20,28 @@ int main(int argc, char *argv[]) {
         std::string command = event.command.get_command_name();
 
         if (command == "nolan") {
-            timed_log("Nolan command called by " + event.command.usr.global_name + ".");
+            bot.log(dpp::ll_debug, "Nolan command called by " + event.command.usr.global_name + ".");
             nolan_process(bot, event);
         }
         else if (command == "clear") {
-            timed_log("Clear command called by " + event.command.usr.global_name + ".");
+            bot.log(dpp::ll_debug, "Clear command called by " + event.command.usr.global_name + ".");
             clear_process(bot, event);
+        }
+        else if (command == "echo") {
+            bot.log(dpp::ll_debug, "Echo command called by " + event.command.usr.global_name + ".");
+            echo_process(bot, event);
         }
     });
 
     bot.on_ready([&bot](const dpp::ready_t& event) {
         if (dpp::run_once<struct register_bot_commands>()) {
-
+            bot.log(dpp::ll_debug, "Creating commands.");
             bot.global_command_create(nolan_command());
             bot.global_command_create(clear_command());
+            bot.global_command_create(echo_command());
         }
     });
+    bot.log(dpp::ll_debug, "Starting up bot.");
     bot.start(dpp::st_wait);
     return 0;
 }
