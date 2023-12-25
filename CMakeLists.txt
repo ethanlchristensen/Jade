@@ -15,7 +15,13 @@ else()
     message("DPP NOT FOUND!")
 endif()
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp
+        src/commands/commands.h
+        src/utils/utils.h
+        src/commands/nolan.cpp
+        src/commands/clear.cpp
+        src/utils/log.cpp
+)
 
 target_link_libraries(${PROJECT_NAME} ${DPP_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${DPP_INCLUDE_DIR})
