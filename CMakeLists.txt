@@ -17,7 +17,6 @@ endif()
 
 add_executable(${PROJECT_NAME} src/main.cpp
         src/commands/commands.h
-        src/utils/utils.h
         src/commands/nolan.cpp
         src/commands/clear.cpp
         src/commands/echo.cpp
