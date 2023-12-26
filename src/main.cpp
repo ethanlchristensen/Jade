@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include <dpp/dpp.h>
-#include "utils/utils.h"
 #include "commands/commands.h"
 
 
