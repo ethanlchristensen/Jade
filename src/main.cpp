@@ -40,7 +40,33 @@ int main(int argc, char *argv[]) {
             bot.global_command_create(echo_command());
         }
     });
-    bot.log(dpp::ll_debug, "Starting up bot.");
+
+    bot.on_guild_members_chunk([](const dpp::guild_members_chunk_t& event) {
+        std::cout << "guild members chunk\n";
+    });
+
+    bot.on_user_update([](const dpp::user_update_t& event) {
+        std::cout << "user update\n";
+    });
+
+    bot.on_guild_member_update([](const dpp::guild_member_update_t& event){
+        std::cout << "guild member update\n";
+    });
+
+//    bot.on_guild_member_update([&bot](const dpp::guild_member_update_t& event) {
+//        bot.log(dpp::ll_debug, "A user was updated in the guild!");
+//        if (event.updated.get_user()->global_name == "etchris") {
+//            if (event.updated.get_nickname() != "Ethan") {
+//                auto target_user = bot.guild_get_member_sync(event.updating_guild->id, event.updated.get_user()->id);
+//                target_user.set_nickname("Ethan");
+//                bot.guild_edit_member(target_user);
+//
+//                dpp::message msg(1084339043938095104, "Let's not change Ethan's username :-)");
+//                bot.message_create(msg);
+//            }
+//        }
+//    });
+
     bot.start(dpp::st_wait);
     return 0;
 }

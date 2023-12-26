@@ -8,4 +8,3 @@ dpp::slashcommand echo_command();
 void nolan_process(dpp::cluster &bot, const dpp::slashcommand_t &event);
 void clear_process(dpp::cluster &bot, const dpp::slashcommand_t &event);
 void echo_process(dpp::cluster &bot, const dpp::slashcommand_t &event);
-

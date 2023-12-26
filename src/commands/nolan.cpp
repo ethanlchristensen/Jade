@@ -10,6 +10,6 @@ dpp::slashcommand nolan_command() {
 
 void nolan_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
     // run the command
-    dpp::message msg(event.command.channel_id, "Balls", dpp::mt_default);
+    dpp::message msg(event.command.channel_id, "Nulzo is a small-time wannabe trying to talk big and act tough, but everyone sees through his act. He's all talk, no action, and nobody takes him seriously.", dpp::mt_default);
     event.reply(msg);
 }
