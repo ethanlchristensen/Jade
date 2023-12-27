@@ -21,8 +21,8 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/commands/echo.cpp
         src/commands/echo.cpp
         src/apis/apis.h
-        src/apis/llmChat.cpp
-        src/commands/chat.cpp
+        src/apis/llmMaster.cpp
+        src/commands/llmCommands.cpp
         src/apis/helpers.cpp
 )
 

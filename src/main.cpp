@@ -37,9 +37,18 @@ int main(int argc, char *argv[]) {
         else if (command == "echo") {
             bot.log(dpp::ll_debug, "/echo called by " + event.command.usr.global_name + ".");
             echo_process(bot, event);
-        } else if (command == "chat") {
+        }
+        else if (command == "chat") {
             bot.log(dpp::ll_debug, "/chat called by " + event.command.usr.global_name + ".");
             chat_process(bot, event, apiToken);
+        }
+        else if (command == "summarize") {
+            bot.log(dpp::ll_debug, "/summarize called by " + event.command.usr.global_name + ".");
+            summarize_process(bot, event, apiToken);
+        }
+        else if (command == "extract") {
+            bot.log(dpp::ll_debug, "/extract called by " + event.command.usr.global_name + ".");
+            extract_process(bot, event, apiToken);
         }
     });
 
@@ -50,6 +59,8 @@ int main(int argc, char *argv[]) {
             bot.global_command_create(clear_command());
             bot.global_command_create(echo_command());
             bot.global_command_create(chat_command());
+            bot.global_command_create(summarize_command());
+            bot.global_command_create(extract_command());
         }
     });
 
