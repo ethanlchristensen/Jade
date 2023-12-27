@@ -8,13 +8,13 @@
 
 int main(int argc, char *argv[]) {
 
-//    curlpp::Cleanup myCleanup;
-
     if (argc != 3) {
         std::cout << "ERROR: Usage: Bot Token and OpenAI API Token must be provided as command line arguments in "
                      "the order '. . . <bot-token> <openai-api-token>'\n";
         exit(1);
     }
+
+    const std::string& apiToken = argv[2];
 
     uint64_t intents = dpp::i_all_intents;
 
@@ -22,7 +22,8 @@ int main(int argc, char *argv[]) {
 
     bot.on_log(dpp::utility::cout_logger());
 
-    bot.on_slashcommand([&bot](const dpp::slashcommand_t& event) {
+    bot.on_slashcommand([&bot, &apiToken](const dpp::slashcommand_t& event) {
+
         std::string command = event.command.get_command_name();
 
         if (command == "nolan") {
@@ -36,6 +37,9 @@ int main(int argc, char *argv[]) {
         else if (command == "echo") {
             bot.log(dpp::ll_debug, "/echo called by " + event.command.usr.global_name + ".");
             echo_process(bot, event);
+        } else if (command == "chat") {
+            bot.log(dpp::ll_debug, "/chat called by " + event.command.usr.global_name + ".");
+            chat_process(bot, event, apiToken);
         }
     });
 
