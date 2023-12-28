@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     }
 
     std::string music_query;
-    std::uint64_t channel_id;
+    dpp::slashcommand_t previous_play_event;
 
     const std::string& apiToken = argv[2];
 
@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
 
     bot.on_log(dpp::utility::cout_logger());
 
-    bot.on_slashcommand([&bot, &apiToken, &music_query, &channel_id](const dpp::slashcommand_t& event) {
+    bot.on_slashcommand([&bot, &apiToken, &music_query, &previous_play_event](const dpp::slashcommand_t& event) {
 
         std::string user = event.command.usr.global_name;
 
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
             bot.log(dpp::ll_debug, "/play called by " + event.command.usr.global_name + ".");
             // save the music query and channel_id to pass around as needed
             music_query = std::get<std::string>(event.get_parameter("query_or_link"));
-            channel_id = event.command.channel_id;
+            previous_play_event = event;
             play_process(bot, event, music_query);
         }
         else if (command == "join") {
@@ -116,8 +116,8 @@ int main(int argc, char *argv[]) {
         }
     });
 
-    bot.on_voice_ready([&bot, &music_query, &channel_id](const dpp::voice_ready_t &event){
-        stream_audio_secondary(bot, event, music_query, channel_id);
+    bot.on_voice_ready([&bot, &music_query, &previous_play_event](const dpp::voice_ready_t &event){
+        stream_audio_secondary(bot, event, music_query, previous_play_event);
     });
 
     bot.start(dpp::st_wait);

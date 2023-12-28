@@ -40,4 +40,4 @@ void resume_process(dpp::cluster &bot, const dpp::slashcommand_t &event);
 void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event);
 
 void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link);
-void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, std::uint64_t channel_id);
+void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, dpp::slashcommand_t &previous_play_event);

@@ -88,20 +88,34 @@ void pause_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
     dpp::voiceconn* v = event.from->get_voice(event.command.guild_id);
 
-    if(v->voiceclient->is_playing())
-        v->voiceclient->pause_audio(true);
+    if(!v || !v->voiceclient) {
+        event.reply("I am not in a VC, nothing to pause!");
+        return;
+    }
 
-    event.reply("Paused the audio!");
+    if(v->voiceclient->is_playing()) {
+        v->voiceclient->pause_audio(true);
+        event.reply("Paused the audio!");
+    } else {
+        event.reply("Nothing to pause!");
+    }
 }
 
 void resume_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
     dpp::voiceconn* v = event.from->get_voice(event.command.guild_id);
 
-    if(v->voiceclient->is_paused())
-        v->voiceclient->pause_audio(false);
+    if(!v || !v->voiceclient) {
+        event.reply("I am not in a VC, nothing to resume!");
+        return;
+    }
 
-    event.reply("Resuming the audio!");
+    if(v->voiceclient->is_paused()) {
+        v->voiceclient->pause_audio(false);
+        event.reply("Resumed the audio!");
+    } else {
+        event.reply("Nothing to resume!");
+    }
 }
 
 void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
@@ -125,8 +139,7 @@ void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
 void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link) {
 
-    event.thinking(true);
-    event.edit_response("Processing your request!");
+    event.thinking(false);
 
     dpp::guild *guild = dpp::find_guild(event.command.guild_id);
 
@@ -144,7 +157,6 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::stri
     } else {
         bot.log(dpp::ll_debug, "Jade not in VC, attempting to connect then stream.");
         event.from->connect_voice(guild->id, event.command.channel_id, false, true);
-        event.edit_response("Processing your request!");
     }
 }
 
@@ -197,18 +209,18 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
     if (channel && channel->voiceclient && channel->voiceclient->is_ready()) {
         bot.log(dpp::ll_debug, "[stream_audio_primary] -> attempting to send the now_playing_msg.");
         dpp::message now_playing_msg(event.command.channel_id, fmt::format("Now playing: {}", query_or_link),dpp::mt_default);
-        bot.message_create(now_playing_msg);
+        event.edit_response(now_playing_msg);
         channel->voiceclient->send_audio_raw((uint16_t *) pcmdata.data(), pcmdata.size());
     }
     else {
         bot.log(dpp::ll_debug, "[stream_audio_primary] -> attempting to send the error_msg");
-        dpp::message now_playing_msg(event.command.channel_id, "I ran into an error.",dpp::mt_default);
-        bot.message_create(now_playing_msg);
+        dpp::message error_msg(event.command.channel_id, "I ran into an error.",dpp::mt_default);
+        event.edit_response(error_msg);
     }
 
 }
 
-void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, std::uint64_t channel_id) {
+void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, dpp::slashcommand_t &previous_play_event) {
     /*
      * Function to stream audio if the bot is already connected to the VC.
      * Takes in a voice_ready_t event
@@ -219,8 +231,7 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
     bot.log(dpp::ll_debug, "[stream_audio_secondary] -> entering the stream_audio_secondary function!");
 
     if (query_or_link.empty()) {
-        dpp::message no_query_or_link_msg(channel_id, "No query or link provided to stream.", dpp::mt_default);
-        bot.message_create(no_query_or_link_msg);
+        previous_play_event.edit_response("No query or link provided to stream.");
         return;
     }
 
@@ -268,14 +279,12 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
 
     if (voice_client && voice_client->is_ready()) {
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> attempting to send the 'now_playing_msg'.");
-        dpp::message now_playing_msg(channel_id, fmt::format("Now playing: {}", query_or_link),dpp::mt_default);
-        bot.message_create(now_playing_msg);
+        previous_play_event.edit_response(fmt::format("Now playing: {}", query_or_link));
         voice_client->send_audio_raw((uint16_t *) pcmdata.data(), pcmdata.size());
     }
     else {
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> attempting to send the 'error_msg'.");
-        dpp::message error_msg(channel_id, "I ran into an error.",dpp::mt_default);
-        bot.message_create(error_msg);
+        previous_play_event.edit_response("I ran into an error.");
     }
 
 }
