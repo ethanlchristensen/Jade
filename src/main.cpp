@@ -14,6 +14,9 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    std::string music_query;
+    std::uint64_t channel_id;
+
     const std::string& apiToken = argv[2];
 
     uint64_t intents = dpp::i_all_intents;
@@ -22,7 +25,9 @@ int main(int argc, char *argv[]) {
 
     bot.on_log(dpp::utility::cout_logger());
 
-    bot.on_slashcommand([&bot, &apiToken](const dpp::slashcommand_t& event) {
+    bot.on_slashcommand([&bot, &apiToken, &music_query, &channel_id](const dpp::slashcommand_t& event) {
+
+        std::string user = event.command.usr.global_name;
 
         std::string command = event.command.get_command_name();
 
@@ -50,17 +55,52 @@ int main(int argc, char *argv[]) {
             bot.log(dpp::ll_debug, "/extract called by " + event.command.usr.global_name + ".");
             extract_process(bot, event, apiToken);
         }
+        else if (command == "play") {
+            bot.log(dpp::ll_debug, "/play called by " + event.command.usr.global_name + ".");
+            // save the music query and channel_id to pass around as needed
+            music_query = std::get<std::string>(event.get_parameter("query_or_link"));
+            channel_id = event.command.channel_id;
+            play_process(bot, event, music_query);
+        }
+        else if (command == "join") {
+            bot.log(dpp::ll_debug, "/join called by " + event.command.usr.global_name + ".");
+            join_process(bot, event);
+        }
+        else if (command == "leave") {
+            bot.log(dpp::ll_debug, "/leave called by " + event.command.usr.global_name + ".");
+            leave_process(bot, event);
+        }
+        else if (command == "pause") {
+            bot.log(dpp::ll_debug, "/pause called by " + event.command.usr.global_name + ".");
+            pause_process(bot, event);
+        }
+        else if (command == "resume") {
+            bot.log(dpp::ll_debug, "/resume called by " + event.command.usr.global_name + ".");
+            resume_process(bot, event);
+        }
+        else if (command == "skip") {
+            bot.log(dpp::ll_debug, "/skip called by " + event.command.usr.global_name + ".");
+            skip_process(bot, event);
+        }
     });
 
     bot.on_ready([&bot](const dpp::ready_t& event) {
         if (dpp::run_once<struct register_bot_commands>()) {
             bot.log(dpp::ll_debug, "creating slash commands.");
-            bot.global_command_create(nolan_command());
-            bot.global_command_create(clear_command());
-            bot.global_command_create(echo_command());
-            bot.global_command_create(chat_command());
-            bot.global_command_create(summarize_command());
-            bot.global_command_create(extract_command());
+            bot.global_bulk_command_create({
+                clear_command(),
+                echo_command(),
+                nolan_command(),
+                chat_command(),
+                summarize_command(),
+                extract_command(),
+                play_command(),
+                join_command(),
+                leave_command(),
+                pause_command(),
+                resume_command(),
+                skip_command()
+            });
         }
     });
 
@@ -74,6 +114,10 @@ int main(int argc, char *argv[]) {
                 bot.log(dpp::ll_debug, "Reverted " + event.updated.get_user()->global_name + " name.");
             }
         }
+    });
+
+    bot.on_voice_ready([&bot, &music_query, &channel_id](const dpp::voice_ready_t &event){
+        stream_audio_secondary(bot, event, music_query, channel_id);
     });
 
     bot.start(dpp::st_wait);

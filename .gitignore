@@ -34,3 +34,5 @@
 cmake*/
 ignore.txt
 .vscode/
+*.mp3
+audio/

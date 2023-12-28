@@ -13,6 +13,7 @@ find_package_handle_standard_args(DPP DEFAULT_MSG DPP_LIBRARIES DPP_INCLUDE_DIR)
 find_package(DPP CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
+find_package(mpg123 CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME} src/main.cpp
         src/commands/commands.h
@@ -24,6 +25,7 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/apis/llmMaster.cpp
         src/commands/llmCommands.cpp
         src/apis/helpers.cpp
+        src/commands/voice.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
@@ -31,6 +33,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         ${DPP_LIBRARIES}
         fmt::fmt
         CURL::libcurl
+        MPG123::libmpg123
+        MPG123::libout123
+        MPG123::libsyn123
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include

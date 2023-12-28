@@ -13,7 +13,7 @@ dpp::slashcommand chat_command() {
 void chat_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string& apiToken) {
     // defer and let the user know we are processing
     dpp::message processing_msg(event.command.channel_id, "Processing your request!", dpp::mt_default);
-    event.thinking(true);
+    event.thinking(false);
     event.edit_response(processing_msg);
     // run the command
     std::string pre_user_prompt = std::get<std::string>(event.get_parameter("message"));
@@ -45,7 +45,7 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std
         }
     } else {
         dpp::message msg(event.command.channel_id, response, dpp::mt_default);
-        event.reply(msg);
+        bot.message_create(msg);
     }
 }
 
