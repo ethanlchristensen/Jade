@@ -1,7 +1,7 @@
 #include "apis.h"
 #include "helpers.cpp"
 
-std::string chat(const std::string& apiToken, const std::string& user_prompt) {
+std::string llm(const std::string& apiToken, const std::string& system_prompt, const std::string& user_prompt) {
     CURL *curl;
     CURLcode response;
     std::string readBuffer;
@@ -14,9 +14,10 @@ std::string chat(const std::string& apiToken, const std::string& user_prompt) {
         headers = curl_slist_append(headers, "Content-Type: application/json");
         headers = curl_slist_append(headers, auth.c_str());
         std::string data = fmt::format(
-            R"({{"model": "{}","messages": [{{"role": "system","content": "You are cool, hip, young AI assistant named Jade!" }},{{"role": "user", "content": "{}" }}],"temperature": 1,"max_tokens": 500, "top_p": 1,"frequency_penalty": 0,"presence_penalty": 0 }})",
-            MODEL, user_prompt
+            R"({{"model": "{}","messages": [{{"role": "system","content": "{}" }},{{"role": "user", "content": "{}" }}],"temperature": 1,"max_tokens": 500, "top_p": 1,"frequency_penalty": 0,"presence_penalty": 0 }})",
+            MODEL, system_prompt, user_prompt
         );
+
         curl_easy_setopt(curl, CURLOPT_URL, OPENAIURL);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
@@ -36,4 +37,3 @@ std::string chat(const std::string& apiToken, const std::string& user_prompt) {
     }
     return "Hey, I am not in the mood to talk right now.";
 }
-
