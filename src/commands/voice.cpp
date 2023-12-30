@@ -79,6 +79,7 @@ void leave_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
         }
         bot.log(dpp::ll_debug, "leaving voice channel.");
         event.from->disconnect_voice(event.command.guild_id);
+        event.reply("Peace out ✌\uFE0F");
     } else {
         event.reply("I'm not in a VC right now silly!");
     }
@@ -152,8 +153,12 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::stri
     dpp::voiceconn* channel = event.from->get_voice(event.command.guild_id);
 
     if (channel && channel->voiceclient && channel->voiceclient->is_ready()) {
-        bot.log(dpp::ll_debug, "Jade in VC, streaming audio.");
-        stream_audio_primary(bot, event, std::move(query_or_link));
+        if (channel->voiceclient->is_playing()) {
+            event.edit_response("I am playing something right now, leave me alone!");
+        } else {
+            bot.log(dpp::ll_debug, "Jade in VC, streaming audio.");
+            stream_audio_primary(bot, event, std::move(query_or_link));
+        }
     } else {
         bot.log(dpp::ll_debug, "Jade not in VC, attempting to connect then stream.");
         event.from->connect_voice(guild->id, event.command.channel_id, false, true);
@@ -183,8 +188,9 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
     buffer = new unsigned char[buffer_size];
 
     bot.log(dpp::ll_debug, fmt::format("[stream_audio_primary] -> user sent in -> {}", query_or_link));
-    std::string full_download_command = fmt::format("{} {}", MP3DOWNLOAD, query_or_link);
+    std::string full_download_command = fmt::format("{} \"ytsearch:{}\"", MP3DOWNLOAD, query_or_link);
 
+    bot.log(dpp::ll_debug, fmt::format("using the following command to download: {}", full_download_command));
     bot.log(dpp::ll_debug, "[stream_audio_primary] -> downloading the audio.");
     std::system(full_download_command.c_str());
     bot.log(dpp::ll_debug, "[stream_audio_primary] -> finished downloading the audio.");
@@ -253,7 +259,7 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
 
 
     bot.log(dpp::ll_debug, fmt::format("[stream_audio_secondary] -> user sent in -> {}", query_or_link));
-    std::string full_download_command = fmt::format("{} {}", MP3DOWNLOAD, query_or_link);
+    std::string full_download_command = fmt::format("{} \"ytsearch:{}\"", MP3DOWNLOAD, query_or_link);
 
     bot.log(dpp::ll_debug, "[stream_audio_secondary] -> downloading the audio.");
     std::system(full_download_command.c_str());
