@@ -2,6 +2,7 @@
 #include <fmt/format.h>
 #include <iomanip>
 #include <sstream>
+#include <regex>
 
 #include <vector>
 #include <fstream>
@@ -11,7 +12,6 @@
 
 #define MUSIC_FILE "C:/Users/ethan/Github/Jade/src/commands/audio/audio.mp3"
 #define MP3DOWNLOAD R"(youtube-dl --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36" --extract-audio --audio-format mp3 -o "C:/Users/ethan/Github/Jade/src/commands/audio/audio.%(ext)s")"
-
 
 dpp::slashcommand nolan_command();
 dpp::slashcommand clear_command();

@@ -35,6 +35,8 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std
                 }
             }
             dpp::message chunk(event.command.channel_id, response.substr(pos, end_pos - pos), dpp::mt_default);
+
+            bot.log(dpp::ll_debug, fmt::format("pos -> {}", pos));
             if (pos == 0)
                 event.edit_response(chunk);
             else
@@ -47,7 +49,7 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std
         }
     } else {
         dpp::message msg(event.command.channel_id, response, dpp::mt_default);
-        bot.message_create(msg);
+        event.edit_response(msg);
     }
 }
 
