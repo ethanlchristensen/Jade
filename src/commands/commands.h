@@ -13,8 +13,6 @@
 #define MUSIC_FILE "C:/Users/ethan/Github/Jade/src/commands/audio/audio.mp3"
 #define MP3DOWNLOAD R"(youtube-dl --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36" --extract-audio --audio-format mp3 -o "C:/Users/ethan/Github/Jade/src/commands/audio/audio.%(ext)s")"
 
-<<<<<<< Updated upstream
-=======
 static std::map<std::string, std::string> FILTERS = {
         {"sigma",                                "aresample=48000, asetrate=48000*0.8,bass=g=13:f=110:w=0.6"},
         {"nightcore",                            "aresample=48000, asetrate=48000*1.5"},
@@ -34,7 +32,6 @@ static std::map<std::string, std::string> FILTERS = {
         {"wide",                                 "extrastereo, afireqsrc=p='clear', stereowiden, earwax"}
 };
 
->>>>>>> Stashed changes
 dpp::slashcommand nolan_command();
 
 dpp::slashcommand clear_command();
@@ -71,7 +68,7 @@ void summarize_process(dpp::cluster &bot, const dpp::slashcommand_t &event, cons
 
 void extract_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string &apiToken);
 
-void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, std::string filter);
+void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, const std::string& filter);
 
 void join_process(dpp::cluster &bot, const dpp::slashcommand_t &event);
 
@@ -83,12 +80,7 @@ void resume_process(dpp::cluster &bot, const dpp::slashcommand_t &event);
 
 void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event);
 
-<<<<<<< Updated upstream
-void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link);
-void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, dpp::slashcommand_t &previous_play_event);
-=======
 void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, const std::string& filter);
 
 void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link,
                             std::uint64_t channel_id, const std::string& filter);
->>>>>>> Stashed changes

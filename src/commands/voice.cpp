@@ -85,11 +85,7 @@ void leave_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
         }
         bot.log(dpp::ll_debug, "leaving voice channel.");
         event.from->disconnect_voice(event.command.guild_id);
-<<<<<<< Updated upstream
         event.reply("Peace out ✌\uFE0F");
-=======
-        event.reply("Peace out!");
->>>>>>> Stashed changes
     } else {
         event.reply("I'm not in a VC right now silly!");
     }
@@ -148,7 +144,7 @@ void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
     }
 }
 
-void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, std::string filter) {
+void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, const std::string& filter) {
 
     event.thinking(false);
 
@@ -163,17 +159,12 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::stri
     dpp::voiceconn* channel = event.from->get_voice(event.command.guild_id);
 
     if (channel && channel->voiceclient && channel->voiceclient->is_ready()) {
-<<<<<<< Updated upstream
         if (channel->voiceclient->is_playing()) {
             event.edit_response("I am playing something right now, leave me alone!");
         } else {
             bot.log(dpp::ll_debug, "Jade in VC, streaming audio.");
-            stream_audio_primary(bot, event, std::move(query_or_link));
+            stream_audio_primary(bot, event, std::move(query_or_link), filter);
         }
-=======
-        bot.log(dpp::ll_debug, "Jade in VC, streaming audio.");
-        stream_audio_primary(bot, event, std::move(query_or_link), std::move(filter));
->>>>>>> Stashed changes
     } else {
         bot.log(dpp::ll_debug, "Jade not in VC, attempting to connect then stream.");
         event.from->connect_voice(guild->id, event.command.channel_id, false, true);
@@ -241,11 +232,8 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
 
 }
 
-<<<<<<< Updated upstream
-void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, dpp::slashcommand_t &previous_play_event) {
-=======
 void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, std::uint64_t channel_id, const std::string& filter) {
->>>>>>> Stashed changes
+
     /*
      * Function to stream audio if the bot is already connected to the VC.
      * Takes in a voice_ready_t event
@@ -254,11 +242,6 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
      */
 
     bot.log(dpp::ll_debug, "[stream_audio_secondary] -> entering the stream_audio_secondary function!");
-
-    if (query_or_link.empty()) {
-        previous_play_event.edit_response("No query or link provided to stream.");
-        return;
-    }
 
     std::vector<uint8_t> pcmdata;
     mpg123_init();
