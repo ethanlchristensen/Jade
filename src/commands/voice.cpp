@@ -172,7 +172,7 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::stri
 }
 
 void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, const std::string& filter) {
-    /*
+/*
      * Function to stream audio if the bot is already connected to the VC.
      * Takes in a slashcommand_t event
      */
@@ -194,9 +194,8 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
     buffer = new unsigned char[buffer_size];
 
     bot.log(dpp::ll_debug, fmt::format("[stream_audio_primary] -> user sent in -> {}", query_or_link));
-    std::string full_download_command = fmt::format("{} \"ytsearch:{}\"", MP3DOWNLOAD, query_or_link);
+    std::string full_download_command = fmt::format("{} {}", MP3DOWNLOAD, query_or_link);
 
-    bot.log(dpp::ll_debug, fmt::format("using the following command to download: {}", full_download_command));
     bot.log(dpp::ll_debug, "[stream_audio_primary] -> downloading the audio.");
     std::system(full_download_command.c_str());
     bot.log(dpp::ll_debug, "[stream_audio_primary] -> finished downloading the audio.");
@@ -221,15 +220,14 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
     if (channel && channel->voiceclient && channel->voiceclient->is_ready()) {
         bot.log(dpp::ll_debug, "[stream_audio_primary] -> attempting to send the now_playing_msg.");
         dpp::message now_playing_msg(event.command.channel_id, fmt::format("Now playing: {}", query_or_link),dpp::mt_default);
-        event.edit_response(now_playing_msg);
+        bot.message_create(now_playing_msg);
         channel->voiceclient->send_audio_raw((uint16_t *) pcmdata.data(), pcmdata.size());
     }
     else {
         bot.log(dpp::ll_debug, "[stream_audio_primary] -> attempting to send the error_msg");
-        dpp::message error_msg(event.command.channel_id, "I ran into an error.",dpp::mt_default);
-        event.edit_response(error_msg);
+        dpp::message now_playing_msg(event.command.channel_id, "I ran into an error.",dpp::mt_default);
+        bot.message_create(now_playing_msg);
     }
-
 }
 
 void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, std::uint64_t channel_id, const std::string& filter) {
