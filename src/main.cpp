@@ -15,7 +15,12 @@ int main(int argc, char *argv[]) {
     }
 
     std::string music_query;
+<<<<<<< Updated upstream
     dpp::slashcommand_t previous_play_event;
+=======
+    std::uint64_t channel_id;
+    std::string filter;
+>>>>>>> Stashed changes
 
     const std::string& apiToken = argv[2];
 
@@ -25,10 +30,13 @@ int main(int argc, char *argv[]) {
 
     bot.on_log(dpp::utility::cout_logger());
 
+<<<<<<< Updated upstream
     bot.on_slashcommand([&bot, &apiToken, &music_query, &previous_play_event](const dpp::slashcommand_t& event) {
+=======
+    bot.on_slashcommand([&bot, &apiToken, &music_query, &channel_id, &filter](const dpp::slashcommand_t& event) {
+>>>>>>> Stashed changes
 
         std::string user = event.command.usr.global_name;
-
         std::string command = event.command.get_command_name();
 
         if (command == "nolan") {
@@ -59,8 +67,15 @@ int main(int argc, char *argv[]) {
             bot.log(dpp::ll_debug, "/play called by " + event.command.usr.global_name + ".");
             // save the music query and channel_id to pass around as needed
             music_query = std::get<std::string>(event.get_parameter("query_or_link"));
+<<<<<<< Updated upstream
             previous_play_event = event;
             play_process(bot, event, music_query);
+=======
+            channel_id = event.command.channel_id;
+            std::string filter_key = std::get<std::string>(event.get_parameter("filter"));
+            filter = FILTERS.at(filter_key);
+            play_process(bot, event, music_query, filter);
+>>>>>>> Stashed changes
         }
         else if (command == "join") {
             bot.log(dpp::ll_debug, "/join called by " + event.command.usr.global_name + ".");
@@ -116,8 +131,13 @@ int main(int argc, char *argv[]) {
         }
     });
 
+<<<<<<< Updated upstream
     bot.on_voice_ready([&bot, &music_query, &previous_play_event](const dpp::voice_ready_t &event){
         stream_audio_secondary(bot, event, music_query, previous_play_event);
+=======
+    bot.on_voice_ready([&bot, &music_query, &channel_id, &filter](const dpp::voice_ready_t &event){
+        stream_audio_secondary(bot, event, music_query, channel_id, filter);
+>>>>>>> Stashed changes
     });
 
     bot.start(dpp::st_wait);

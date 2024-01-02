@@ -1,3 +1,4 @@
+#pragma once
 #include <utility>
 
 #include "commands.h"
@@ -8,6 +9,11 @@ dpp::slashcommand play_command() {
     play.set_name("play");
     play.set_description("Command to play audio in VC using a link or query,");
     play.add_option(dpp::command_option(dpp::co_string, "query_or_link", "Link to play or query to search.", true));
+    dpp::command_option filters = dpp::command_option(dpp::co_string, "filter", "The filter to apply to the audio.", true);
+    for (auto & it : FILTERS) {
+        filters.add_choice(dpp::command_option_choice(it.first, it.first));
+    }
+    play.add_option(filters);
     return play;
 }
 
@@ -79,7 +85,11 @@ void leave_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
         }
         bot.log(dpp::ll_debug, "leaving voice channel.");
         event.from->disconnect_voice(event.command.guild_id);
+<<<<<<< Updated upstream
         event.reply("Peace out ✌\uFE0F");
+=======
+        event.reply("Peace out!");
+>>>>>>> Stashed changes
     } else {
         event.reply("I'm not in a VC right now silly!");
     }
@@ -138,7 +148,7 @@ void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
     }
 }
 
-void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link) {
+void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, std::string filter) {
 
     event.thinking(false);
 
@@ -153,19 +163,24 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::stri
     dpp::voiceconn* channel = event.from->get_voice(event.command.guild_id);
 
     if (channel && channel->voiceclient && channel->voiceclient->is_ready()) {
+<<<<<<< Updated upstream
         if (channel->voiceclient->is_playing()) {
             event.edit_response("I am playing something right now, leave me alone!");
         } else {
             bot.log(dpp::ll_debug, "Jade in VC, streaming audio.");
             stream_audio_primary(bot, event, std::move(query_or_link));
         }
+=======
+        bot.log(dpp::ll_debug, "Jade in VC, streaming audio.");
+        stream_audio_primary(bot, event, std::move(query_or_link), std::move(filter));
+>>>>>>> Stashed changes
     } else {
         bot.log(dpp::ll_debug, "Jade not in VC, attempting to connect then stream.");
         event.from->connect_voice(guild->id, event.command.channel_id, false, true);
     }
 }
 
-void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link) {
+void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, const std::string& filter) {
     /*
      * Function to stream audio if the bot is already connected to the VC.
      * Takes in a slashcommand_t event
@@ -226,7 +241,11 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
 
 }
 
+<<<<<<< Updated upstream
 void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, dpp::slashcommand_t &previous_play_event) {
+=======
+void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, std::uint64_t channel_id, const std::string& filter) {
+>>>>>>> Stashed changes
     /*
      * Function to stream audio if the bot is already connected to the VC.
      * Takes in a voice_ready_t event
@@ -267,6 +286,8 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
 
     mpg123_open(mh, MUSIC_FILE);
     mpg123_getformat(mh, &rate, &channels, &encoding);
+//    mpg123_eq_bands(mh, MPG123_LEFT|MPG123_RIGHT, 0, 32, 7);
+//    mpg123_eq_bands(mh, MPG123_LEFT|MPG123_RIGHT, 22, 26, 2);
 
     unsigned int counter = 0;
     for (int totalBytes = 0; mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK; ) {
