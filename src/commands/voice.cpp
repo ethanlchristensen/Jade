@@ -233,7 +233,6 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
 }
 
 void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, std::uint64_t channel_id, const std::string& filter) {
-
     /*
      * Function to stream audio if the bot is already connected to the VC.
      * Takes in a voice_ready_t event
@@ -242,6 +241,12 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
      */
 
     bot.log(dpp::ll_debug, "[stream_audio_secondary] -> entering the stream_audio_secondary function!");
+
+    if (query_or_link.empty()) {
+        dpp::message no_query_or_link_msg(channel_id, "No query or link provided to stream.", dpp::mt_default);
+        bot.message_create(no_query_or_link_msg);
+        return;
+    }
 
     std::vector<uint8_t> pcmdata;
     mpg123_init();
@@ -261,7 +266,7 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
 
 
     bot.log(dpp::ll_debug, fmt::format("[stream_audio_secondary] -> user sent in -> {}", query_or_link));
-    std::string full_download_command = fmt::format("{} \"ytsearch:{}\"", MP3DOWNLOAD, query_or_link);
+    std::string full_download_command = fmt::format("{} {}", MP3DOWNLOAD, query_or_link);
 
     bot.log(dpp::ll_debug, "[stream_audio_secondary] -> downloading the audio.");
     std::system(full_download_command.c_str());
@@ -269,8 +274,6 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
 
     mpg123_open(mh, MUSIC_FILE);
     mpg123_getformat(mh, &rate, &channels, &encoding);
-//    mpg123_eq_bands(mh, MPG123_LEFT|MPG123_RIGHT, 0, 32, 7);
-//    mpg123_eq_bands(mh, MPG123_LEFT|MPG123_RIGHT, 22, 26, 2);
 
     unsigned int counter = 0;
     for (int totalBytes = 0; mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK; ) {
@@ -289,14 +292,15 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
 
     if (voice_client && voice_client->is_ready()) {
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> attempting to send the 'now_playing_msg'.");
-        previous_play_event.edit_response(fmt::format("Now playing: {}", query_or_link));
+        dpp::message now_playing_msg(channel_id, fmt::format("Now playing: {}", query_or_link),dpp::mt_default);
+        bot.message_create(now_playing_msg);
         voice_client->send_audio_raw((uint16_t *) pcmdata.data(), pcmdata.size());
     }
     else {
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> attempting to send the 'error_msg'.");
-        previous_play_event.edit_response("I ran into an error.");
+        dpp::message error_msg(channel_id, "I ran into an error.",dpp::mt_default);
+        bot.message_create(error_msg);
     }
-
 }
 
 
