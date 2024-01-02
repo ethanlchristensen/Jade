@@ -146,7 +146,7 @@ void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
 void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, const std::string& filter) {
 
-    event.thinking(false);
+    event.thinking(true);
 
     dpp::guild *guild = dpp::find_guild(event.command.guild_id);
 
@@ -163,10 +163,12 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::stri
             event.edit_response("I am playing something right now, leave me alone!");
         } else {
             bot.log(dpp::ll_debug, "Jade in VC, streaming audio.");
+            event.edit_response("Processing your request!");
             stream_audio_primary(bot, event, std::move(query_or_link), filter);
         }
     } else {
         bot.log(dpp::ll_debug, "Jade not in VC, attempting to connect then stream.");
+        event.edit_response("Processing your request!");
         event.from->connect_voice(guild->id, event.command.channel_id, false, true);
     }
 }
