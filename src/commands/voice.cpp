@@ -205,7 +205,6 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
         dpp::message now_playing_msg(event.command.channel_id, "I ran into an error.",dpp::mt_default);
         bot.message_create(now_playing_msg);
     }
-
 }
 
 void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, std::uint64_t channel_id) {
