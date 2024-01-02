@@ -277,7 +277,6 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
         dpp::message error_msg(channel_id, "I ran into an error.",dpp::mt_default);
         bot.message_create(error_msg);
     }
-
 }
 
 
