@@ -1,3 +1,4 @@
+#pragma once
 #include <utility>
 
 #include "commands.h"
@@ -8,6 +9,11 @@ dpp::slashcommand play_command() {
     play.set_name("play");
     play.set_description("Command to play audio in VC using a link or query,");
     play.add_option(dpp::command_option(dpp::co_string, "query_or_link", "Link to play or query to search.", true));
+    dpp::command_option filters = dpp::command_option(dpp::co_string, "filter", "The filter to apply to the audio.", true);
+    for (auto & it : FILTERS) {
+        filters.add_choice(dpp::command_option_choice(it.first, it.first));
+    }
+    play.add_option(filters);
     return play;
 }
 
@@ -79,6 +85,7 @@ void leave_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
         }
         bot.log(dpp::ll_debug, "leaving voice channel.");
         event.from->disconnect_voice(event.command.guild_id);
+        event.reply("Peace out ✌\uFE0F");
     } else {
         event.reply("I'm not in a VC right now silly!");
     }
@@ -88,20 +95,34 @@ void pause_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
     dpp::voiceconn* v = event.from->get_voice(event.command.guild_id);
 
-    if(v->voiceclient->is_playing())
-        v->voiceclient->pause_audio(true);
+    if(!v || !v->voiceclient) {
+        event.reply("I am not in a VC, nothing to pause!");
+        return;
+    }
 
-    event.reply("Paused the audio!");
+    if(v->voiceclient->is_playing()) {
+        v->voiceclient->pause_audio(true);
+        event.reply("Paused the audio!");
+    } else {
+        event.reply("Nothing to pause!");
+    }
 }
 
 void resume_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
     dpp::voiceconn* v = event.from->get_voice(event.command.guild_id);
 
-    if(v->voiceclient->is_paused())
-        v->voiceclient->pause_audio(false);
+    if(!v || !v->voiceclient) {
+        event.reply("I am not in a VC, nothing to resume!");
+        return;
+    }
 
-    event.reply("Resuming the audio!");
+    if(v->voiceclient->is_paused()) {
+        v->voiceclient->pause_audio(false);
+        event.reply("Resumed the audio!");
+    } else {
+        event.reply("Nothing to resume!");
+    }
 }
 
 void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
@@ -123,10 +144,9 @@ void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
     }
 }
 
-void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link) {
+void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, const std::string& filter) {
 
     event.thinking(true);
-    event.edit_response("Processing your request!");
 
     dpp::guild *guild = dpp::find_guild(event.command.guild_id);
 
@@ -139,17 +159,22 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::stri
     dpp::voiceconn* channel = event.from->get_voice(event.command.guild_id);
 
     if (channel && channel->voiceclient && channel->voiceclient->is_ready()) {
-        bot.log(dpp::ll_debug, "Jade in VC, streaming audio.");
-        stream_audio_primary(bot, event, std::move(query_or_link));
+        if (channel->voiceclient->is_playing()) {
+            event.edit_response("I am playing something right now, leave me alone!");
+        } else {
+            bot.log(dpp::ll_debug, "Jade in VC, streaming audio.");
+            event.edit_response("Processing your request!");
+            stream_audio_primary(bot, event, std::move(query_or_link), filter);
+        }
     } else {
         bot.log(dpp::ll_debug, "Jade not in VC, attempting to connect then stream.");
-        event.from->connect_voice(guild->id, event.command.channel_id, false, true);
         event.edit_response("Processing your request!");
+        event.from->connect_voice(guild->id, event.command.channel_id, false, true);
     }
 }
 
-void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link) {
-    /*
+void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, const std::string& filter) {
+/*
      * Function to stream audio if the bot is already connected to the VC.
      * Takes in a slashcommand_t event
      */
@@ -207,7 +232,7 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
     }
 }
 
-void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, std::uint64_t channel_id) {
+void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, std::uint64_t channel_id, const std::string& filter) {
     /*
      * Function to stream audio if the bot is already connected to the VC.
      * Takes in a voice_ready_t event

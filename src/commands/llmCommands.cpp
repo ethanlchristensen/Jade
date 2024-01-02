@@ -11,10 +11,9 @@ dpp::slashcommand chat_command() {
 }
 
 void chat_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string& apiToken) {
-    // defer and let the user know we are processing
-    dpp::message processing_msg(event.command.channel_id, "Processing your request!", dpp::mt_default);
+
     event.thinking(false);
-    event.edit_response(processing_msg);
+
     // run the command
     std::string pre_user_prompt = std::get<std::string>(event.get_parameter("message"));
     // need a better way to do this
@@ -36,7 +35,12 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std
                 }
             }
             dpp::message chunk(event.command.channel_id, response.substr(pos, end_pos - pos), dpp::mt_default);
-            bot.message_create(chunk);
+
+            bot.log(dpp::ll_debug, fmt::format("pos -> {}", pos));
+            if (pos == 0)
+                event.edit_response(chunk);
+            else
+                bot.message_create(chunk);
 
             pos = end_pos;
             if (pos < response.size() && response[pos] == ' ') {
@@ -45,7 +49,7 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std
         }
     } else {
         dpp::message msg(event.command.channel_id, response, dpp::mt_default);
-        bot.message_create(msg);
+        event.edit_response(msg);
     }
 }
 
@@ -60,6 +64,7 @@ dpp::slashcommand summarize_command() {
 
 void summarize_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string& apiToken) {
     // run the command
+    event.thinking(false);
     std::string pre_user_prompt = std::get<std::string>(event.get_parameter("message"));
     // need a better way to do this
     std::replace(pre_user_prompt.begin(), pre_user_prompt.end(), '/', ' ');
@@ -69,7 +74,7 @@ void summarize_process(dpp::cluster &bot, const dpp::slashcommand_t &event, cons
     // call gpt
     std::string response = llm(apiToken, SYSTEMPROMPT, fmt::format("TASK: {} INPUT: {}", SUMMARIZEPROMPT, pre_user_prompt));
     dpp::message msg(event.command.channel_id, response, dpp::mt_default);
-    event.reply(msg);
+    event.edit_response(msg);
 }
 
 dpp::slashcommand extract_command() {
@@ -83,6 +88,7 @@ dpp::slashcommand extract_command() {
 
 void extract_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string& apiToken) {
     // run the command
+    event.thinking(false);
     std::string pre_user_prompt = std::get<std::string>(event.get_parameter("message"));
     // need a better way to do this
     std::replace(pre_user_prompt.begin(), pre_user_prompt.end(), '/', ' ');
@@ -92,5 +98,5 @@ void extract_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const 
     // call gpt
     std::string response = llm(apiToken, SYSTEMPROMPT, fmt::format("TASK: {} INPUT: {}", EXTRACTPROMPT, pre_user_prompt));
     dpp::message msg(event.command.channel_id, response, dpp::mt_default);
-    event.reply(msg);
+    event.edit_response(msg);
 }
