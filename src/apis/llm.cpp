@@ -2,6 +2,7 @@
 #include "helpers.cpp"
 
 std::string llm(const std::string& apiToken, const std::string& system_prompt, const std::string& user_prompt) {
+    // command to response to the users prompt
     CURL *curl;
     CURLcode response;
     std::string readBuffer;
@@ -39,6 +40,7 @@ std::string llm(const std::string& apiToken, const std::string& system_prompt, c
 }
 
 std::int8_t tts(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string& apiToken, const std::string& text, const std::string& voice) {
+    // command to turn text into speech using open ai and send to discord VC.
     FILE *fp;
     CURL *curl;
     CURLcode response;
@@ -69,7 +71,7 @@ std::int8_t tts(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::
         headers = curl_slist_append(headers, "Content-Type: application/json");
         headers = curl_slist_append(headers, auth.c_str());
         std::string data = fmt::format(
-                R"({{"model": "{}","input": "{}", "voice":"{}"}})",
+                R"({{"model": "{}","input": "{}", "voice":"{}", "speed": 1.0}})",
                 TTSMODEL, text, voice
         );
 
@@ -91,7 +93,7 @@ std::int8_t tts(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::
 
     bot.log(dpp::ll_debug, "[tts] -> attempting to read tts.mp3 to send to vc.");
     mpg123_handle *mh = mpg123_new(nullptr, &error);
-    mpg123_param(mh, MPG123_FORCE_RATE, 94000, 94000.0);
+    mpg123_param(mh, MPG123_FORCE_RATE, 96000, 96000.0);
 
     buffer_size = mpg123_outblock(mh);
     buffer = new unsigned char[buffer_size];
@@ -115,6 +117,7 @@ std::int8_t tts(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::
     dpp::voiceconn* channel = event.from->get_voice(event.command.guild_id);
 
     if (channel && channel->voiceclient && channel->voiceclient->is_ready()) {
+        channel->voiceclient->set_send_audio_type(dpp::discord_voice_client::satype_recorded_audio);
         bot.log(dpp::ll_debug, "[tts] -> sending tts audio to the vc!");
         channel->voiceclient->send_audio_raw((uint16_t *) pcmdata.data(), pcmdata.size());
     } else {
