@@ -60,8 +60,13 @@ int main(int argc, char *argv[]) {
             // save the music query and channel_id to pass around as needed
             music_query = std::get<std::string>(event.get_parameter("query_or_link"));
             channel_id = event.command.channel_id;
-            std::string filter_key = std::get<std::string>(event.get_parameter("filter"));
-            filter = FILTERS.at(filter_key);
+            std::variant filter_provided = event.get_parameter("filter");
+            if (filter_provided.index() > 0) {
+                std::string filter_key = std::get<std::string>(filter_provided);
+                filter = FILTERS.at(filter_key);
+            } else {
+                filter = "None";
+            }
             play_process(bot, event, music_query, filter);
         }
         else if (command == "join") {
@@ -84,6 +89,12 @@ int main(int argc, char *argv[]) {
             bot.log(dpp::ll_debug, "/skip called by " + event.command.usr.global_name + ".");
             skip_process(bot, event);
         }
+        else if (command == "say") {
+            bot.log(dpp::ll_debug, "/say called by " + event.command.usr.global_name + ".");
+            if (user == "etchris" || user == "nulzo") {
+                say_process(bot, event, apiToken);
+            }
+        }
     });
 
     bot.on_ready([&bot](const dpp::ready_t& event) {
@@ -101,7 +112,8 @@ int main(int argc, char *argv[]) {
                 leave_command(),
                 pause_command(),
                 resume_command(),
-                skip_command()
+                skip_command(),
+                say_command(),
             });
         }
     });
