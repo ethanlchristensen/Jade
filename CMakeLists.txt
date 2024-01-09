@@ -14,6 +14,17 @@ find_package(DPP CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
 find_package(mpg123 CONFIG REQUIRED)
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
+        libavdevice
+        libavfilter
+        libavformat
+        libavcodec
+        libswresample
+        libswscale
+        libavutil
+)
 
 add_executable(${PROJECT_NAME} src/main.cpp
         src/commands/commands.h
@@ -26,6 +37,7 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/commands/llmCommands.cpp
         src/apis/helpers.cpp
         src/commands/voice.cpp
+        src/commands/say.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
@@ -36,6 +48,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         MPG123::libmpg123
         MPG123::libout123
         MPG123::libsyn123
+        PkgConfig::LIBAV
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include

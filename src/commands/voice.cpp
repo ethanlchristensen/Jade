@@ -9,7 +9,7 @@ dpp::slashcommand play_command() {
     play.set_name("play");
     play.set_description("Command to play audio in VC using a link or query,");
     play.add_option(dpp::command_option(dpp::co_string, "query_or_link", "Link to play or query to search.", true));
-    dpp::command_option filters = dpp::command_option(dpp::co_string, "filter", "The filter to apply to the audio.", true);
+    dpp::command_option filters = dpp::command_option(dpp::co_string, "filter", "The filter to apply to the audio.", false);
     for (auto & it : FILTERS) {
         filters.add_choice(dpp::command_option_choice(it.first, it.first));
     }
@@ -65,13 +65,11 @@ void join_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
     dpp::guild* g = dpp::find_guild(event.command.guild_id);
 
     if (!g->connect_member_voice(event.command.get_issuing_user().id)) {
-        dpp::message error_msg(event.command.channel_id, "I would love to play some music, but don't you want to listen too?", dpp::mt_default);
+        dpp::message error_msg(event.command.channel_id,
+                               "I would love to play some music, but don't you want to listen too?", dpp::mt_default);
         bot.message_create(error_msg);
         return;
     }
-
-    dpp::message success_msg(event.command.channel_id, "Joined the VC!", dpp::mt_default);
-    bot.message_create(success_msg);
 }
 
 void leave_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
@@ -128,6 +126,8 @@ void resume_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
     dpp::voiceconn* v = event.from->get_voice(event.command.guild_id);
+
+    dpp::guild *guild = dpp::find_guild(event.command.guild_id);
 
     if (v && v->voiceclient) {
         if (v->voiceclient->is_playing()) {
@@ -190,13 +190,21 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
 
     /* Note it is important to force the frequency to 48000 for Discord compatibility */
     mpg123_handle *mh = mpg123_new(nullptr, &err);
-    mpg123_param(mh, MPG123_FORCE_RATE, 48000, 48000.0);
+    if (filter == "KevinG") {
+        mpg123_param(mh, MPG123_FORCE_RATE, 36000, 36000.0);
+    }
+    else if (filter == "slowed") {
+        mpg123_param(mh, MPG123_FORCE_RATE, 60000, 60000.0);
+    }
+    else {
+        mpg123_param(mh, MPG123_FORCE_RATE, 48000, 48000.0);
+    }
 
     buffer_size = mpg123_outblock(mh);
     buffer = new unsigned char[buffer_size];
 
     bot.log(dpp::ll_debug, fmt::format("[stream_audio_primary] -> user sent in -> {}", query_or_link));
-    std::string full_download_command = fmt::format("{} {}", MP3DOWNLOAD, query_or_link);
+    std::string full_download_command = fmt::format("{} \"ytsearch:{}\"", MP3DOWNLOAD, query_or_link);
 
     bot.log(dpp::ll_debug, "[stream_audio_primary] -> downloading the audio.");
     std::system(full_download_command.c_str());
@@ -206,7 +214,7 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
     mpg123_getformat(mh, &rate, &channels, &encoding);
 
     unsigned int counter = 0;
-    for (int totalBytes = 0; mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK; ) {
+    for (size_t totalBytes = 0; mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK; ) {
         for (size_t i = 0; i < buffer_size; i++) {
             pcmdata.push_back(buffer[i]);
         }
@@ -259,14 +267,22 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
 
     /* Note it is important to force the frequency to 48000 for Discord compatibility */
     mpg123_handle *mh = mpg123_new(nullptr, &err);
-    mpg123_param(mh, MPG123_FORCE_RATE, 48000, 48000.0);
+    if (filter == "KevinG") {
+        mpg123_param(mh, MPG123_FORCE_RATE, 36000, 36000.0);
+    }
+    else if (filter == "slowed") {
+        mpg123_param(mh, MPG123_FORCE_RATE, 60000, 60000.0);
+    }
+    else {
+        mpg123_param(mh, MPG123_FORCE_RATE, 48000, 48000.0);
+    }
 
     buffer_size = mpg123_outblock(mh);
     buffer = new unsigned char[buffer_size];
 
 
     bot.log(dpp::ll_debug, fmt::format("[stream_audio_secondary] -> user sent in -> {}", query_or_link));
-    std::string full_download_command = fmt::format("{} {}", MP3DOWNLOAD, query_or_link);
+    std::string full_download_command = fmt::format("{} \"ytsearch:{}\"", MP3DOWNLOAD, query_or_link);
 
     bot.log(dpp::ll_debug, "[stream_audio_secondary] -> downloading the audio.");
     std::system(full_download_command.c_str());
