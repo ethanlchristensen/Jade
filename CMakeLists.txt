@@ -33,7 +33,7 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/commands/echo.cpp
         src/commands/echo.cpp
         src/apis/apis.h
-        src/apis/llmMaster.cpp
+        src/apis/llm.cpp
         src/commands/llmCommands.cpp
         src/apis/helpers.cpp
         src/commands/voice.cpp
