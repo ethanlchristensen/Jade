@@ -15,6 +15,7 @@ find_package(fmt CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
 find_package(mpg123 CONFIG REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(opus REQUIRED)
 
 pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
         libavdevice
@@ -33,7 +34,6 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/commands/echo.cpp
         src/commands/echo.cpp
         src/apis/apis.h
-        src/apis/llm.cpp
         src/commands/llmCommands.cpp
         src/apis/helpers.cpp
         src/commands/voice.cpp
@@ -49,10 +49,13 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         MPG123::libout123
         MPG123::libsyn123
         PkgConfig::LIBAV
+        Opus::opus
+        odbc32
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${DPP_INCLUDE_DIR}
+        ${OPUS_INCLUDE_DIRS}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

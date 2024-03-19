@@ -97,6 +97,10 @@ int main(int argc, char *argv[]) {
         }
     });
 
+    bot.on_message_create([](const dpp::message_create_t& event) {
+        return;
+    });
+
     bot.on_ready([&bot](const dpp::ready_t& event) {
         if (dpp::run_once<struct register_bot_commands>()) {
             bot.log(dpp::ll_debug, "creating slash commands.");
