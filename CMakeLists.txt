@@ -8,12 +8,27 @@ message("cmake module path ${CMAKE_MODULE_PATH}")
 find_path(DPP_INCLUDE_DIR NAMES dpp/dpp.h HINTS ${DPP_ROOT_DIR})
 find_library(DPP_LIBRARIES NAMES dpp "libdpp.a" HINTS ${DPP_ROOT_DIR})
 include(FindPackageHandleStandardArgs)
+
+file(COPY ${CMAKE_SOURCE_DIR}/src/commands/audio DESTINATION ${CMAKE_BINARY_DIR})
+
 find_package_handle_standard_args(DPP DEFAULT_MSG DPP_LIBRARIES DPP_INCLUDE_DIR)
 
 find_package(DPP CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
 find_package(mpg123 CONFIG REQUIRED)
+find_package(PkgConfig REQUIRED)
+find_package(opus REQUIRED)
+
+pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
+        libavdevice
+        libavfilter
+        libavformat
+        libavcodec
+        libswresample
+        libswscale
+        libavutil
+)
 
 add_executable(${PROJECT_NAME} src/main.cpp
         src/commands/commands.h
@@ -22,10 +37,10 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/commands/echo.cpp
         src/commands/echo.cpp
         src/apis/apis.h
-        src/apis/llmMaster.cpp
         src/commands/llmCommands.cpp
         src/apis/helpers.cpp
         src/commands/voice.cpp
+        src/commands/say.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
@@ -36,10 +51,14 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         MPG123::libmpg123
         MPG123::libout123
         MPG123::libsyn123
+        PkgConfig::LIBAV
+        Opus::opus
+        odbc32
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${DPP_INCLUDE_DIR}
+        ${OPUS_INCLUDE_DIRS}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

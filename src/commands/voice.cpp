@@ -1,6 +1,8 @@
 #pragma once
-#include <utility>
 
+#include <utility>
+#include <curl/curl.h>
+#include "../apis/apis.h"
 #include "commands.h"
 
 dpp::slashcommand play_command() {
@@ -9,8 +11,9 @@ dpp::slashcommand play_command() {
     play.set_name("play");
     play.set_description("Command to play audio in VC using a link or query,");
     play.add_option(dpp::command_option(dpp::co_string, "query_or_link", "Link to play or query to search.", true));
-    dpp::command_option filters = dpp::command_option(dpp::co_string, "filter", "The filter to apply to the audio.", true);
-    for (auto & it : FILTERS) {
+    dpp::command_option filters = dpp::command_option(dpp::co_string, "filter", "The filter to apply to the audio.",
+                                                      false);
+    for (auto &it: FILTERS) {
         filters.add_choice(dpp::command_option_choice(it.first, it.first));
     }
     play.add_option(filters);
@@ -62,30 +65,28 @@ void join_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
     event.thinking(true);
     event.edit_response("Processing your request!");
 
-    dpp::guild* g = dpp::find_guild(event.command.guild_id);
+    dpp::guild *g = dpp::find_guild(event.command.guild_id);
 
     if (!g->connect_member_voice(event.command.get_issuing_user().id)) {
-        dpp::message error_msg(event.command.channel_id, "I would love to play some music, but don't you want to listen too?", dpp::mt_default);
+        dpp::message error_msg(event.command.channel_id,
+                               "I would love to play some music, but don't you want to listen too?", dpp::mt_default);
         bot.message_create(error_msg);
         return;
     }
-
-    dpp::message success_msg(event.command.channel_id, "Joined the VC!", dpp::mt_default);
-    bot.message_create(success_msg);
 }
 
 void leave_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
-    dpp::voiceconn* v = event.from->get_voice(event.command.guild_id);
+    dpp::voiceconn *v = event.from->get_voice(event.command.guild_id);
 
-    if(v) {
-        if(v->voiceclient->is_playing()) {
+    if (v) {
+        if (v->voiceclient->is_playing()) {
             bot.log(dpp::ll_debug, "bot is playing audio, stopping audio.");
             v->voiceclient->stop_audio();
         }
         bot.log(dpp::ll_debug, "leaving voice channel.");
         event.from->disconnect_voice(event.command.guild_id);
-        event.reply("Peace out ✌\uFE0F");
+        event.reply("Peace out ✌");
     } else {
         event.reply("I'm not in a VC right now silly!");
     }
@@ -93,14 +94,14 @@ void leave_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
 void pause_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
-    dpp::voiceconn* v = event.from->get_voice(event.command.guild_id);
+    dpp::voiceconn *v = event.from->get_voice(event.command.guild_id);
 
-    if(!v || !v->voiceclient) {
+    if (!v || !v->voiceclient) {
         event.reply("I am not in a VC, nothing to pause!");
         return;
     }
 
-    if(v->voiceclient->is_playing()) {
+    if (v->voiceclient->is_playing()) {
         v->voiceclient->pause_audio(true);
         event.reply("Paused the audio!");
     } else {
@@ -110,14 +111,14 @@ void pause_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
 void resume_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
-    dpp::voiceconn* v = event.from->get_voice(event.command.guild_id);
+    dpp::voiceconn *v = event.from->get_voice(event.command.guild_id);
 
-    if(!v || !v->voiceclient) {
+    if (!v || !v->voiceclient) {
         event.reply("I am not in a VC, nothing to resume!");
         return;
     }
 
-    if(v->voiceclient->is_paused()) {
+    if (v->voiceclient->is_paused()) {
         v->voiceclient->pause_audio(false);
         event.reply("Resumed the audio!");
     } else {
@@ -127,7 +128,9 @@ void resume_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
 void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 
-    dpp::voiceconn* v = event.from->get_voice(event.command.guild_id);
+    dpp::voiceconn *v = event.from->get_voice(event.command.guild_id);
+
+    dpp::guild *guild = dpp::find_guild(event.command.guild_id);
 
     if (v && v->voiceclient) {
         if (v->voiceclient->is_playing()) {
@@ -144,19 +147,21 @@ void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
     }
 }
 
-void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, const std::string& filter) {
+void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link,
+                  const std::string &filter) {
 
     event.thinking(true);
 
     dpp::guild *guild = dpp::find_guild(event.command.guild_id);
 
     if (!guild->connect_member_voice(event.command.get_issuing_user().id)) {
-        dpp::message error_msg(event.command.channel_id, "I would love to play some music, but don't you want to listen too?", dpp::mt_default);
+        dpp::message error_msg(event.command.channel_id,
+                               "I would love to play some music, but don't you want to listen too?", dpp::mt_default);
         event.edit_response(error_msg);
         return;
     }
 
-    dpp::voiceconn* channel = event.from->get_voice(event.command.guild_id);
+    dpp::voiceconn *channel = event.from->get_voice(event.command.guild_id);
 
     if (channel && channel->voiceclient && channel->voiceclient->is_ready()) {
         if (channel->voiceclient->is_playing()) {
@@ -173,136 +178,80 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::stri
     }
 }
 
-void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, const std::string& filter) {
-/*
+
+void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link,
+                          const std::string &filter) {
+    /*
      * Function to stream audio if the bot is already connected to the VC.
      * Takes in a slashcommand_t event
      */
+    size_t bytes_read;
+    std::byte buf[11520];
 
-    std::vector<uint8_t> pcmdata;
-    mpg123_init();
-
-    int err = 0;
-    unsigned char* buffer;
-    size_t buffer_size, done;
-    int channels, encoding;
-    long rate;
-
-    /* Note it is important to force the frequency to 48000 for Discord compatibility */
-    mpg123_handle *mh = mpg123_new(nullptr, &err);
-    mpg123_param(mh, MPG123_FORCE_RATE, 48000, 48000.0);
-
-    buffer_size = mpg123_outblock(mh);
-    buffer = new unsigned char[buffer_size];
-
-    bot.log(dpp::ll_debug, fmt::format("[stream_audio_primary] -> user sent in -> {}", query_or_link));
-    std::string full_download_command = fmt::format("{} {}", MP3DOWNLOAD, query_or_link);
-
-    bot.log(dpp::ll_debug, "[stream_audio_primary] -> downloading the audio.");
-    std::system(full_download_command.c_str());
-    bot.log(dpp::ll_debug, "[stream_audio_primary] -> finished downloading the audio.");
-
-    mpg123_open(mh, MUSIC_FILE);
-    mpg123_getformat(mh, &rate, &channels, &encoding);
-
-    unsigned int counter = 0;
-    for (int totalBytes = 0; mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK; ) {
-        for (size_t i = 0; i < buffer_size; i++) {
-            pcmdata.push_back(buffer[i]);
+    if (query_or_link.empty()) {
+        dpp::message no_query_or_link_msg(event.command.channel_id, "No query or link provided to stream.",
+                                          dpp::mt_default);
+        bot.message_create(no_query_or_link_msg);
+        return;
+    }
+    std::string data = fmt::format(
+            R"(yt-dlp -f bestaudio -o - "{}" | ffmpeg -i pipe: -loglevel warning -f s16le -ac 2 -ar 48000 -acodec pcm_s16le -f wav pipe:)",
+            query_or_link);
+    dpp::discord_voice_client *voice_client = event.from->get_voice(event.command.guild_id)->voiceclient;
+    if (voice_client && voice_client->is_ready()) {
+        voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
+        // must be "rb" (read binary), "r" causes broken pipe error
+        auto pipe = _popen(data.c_str(), "rb");
+        while (true) {
+            bytes_read = fread(buf, sizeof(std::byte), dpp::send_audio_raw_max_length, pipe);
+            if (bytes_read <= 0)
+                break;
+            if (bytes_read <= dpp::send_audio_raw_max_length) {
+                voice_client->send_audio_raw((uint16_t *) buf, sizeof(buf));
+            }
         }
-        counter += buffer_size;
-        totalBytes += done;
-    }
-    delete[] buffer;
-    mpg123_close(mh);
-    mpg123_delete(mh);
-
-    dpp::voiceconn* channel = event.from->get_voice(event.command.guild_id);
-
-    if (channel && channel->voiceclient && channel->voiceclient->is_ready()) {
-        bot.log(dpp::ll_debug, "[stream_audio_primary] -> attempting to send the now_playing_msg.");
-        dpp::message now_playing_msg(event.command.channel_id, fmt::format("Now playing: {}", query_or_link),dpp::mt_default);
-        bot.message_create(now_playing_msg);
-        channel->voiceclient->send_audio_raw((uint16_t *) pcmdata.data(), pcmdata.size());
-    }
-    else {
-        bot.log(dpp::ll_debug, "[stream_audio_primary] -> attempting to send the error_msg");
-        dpp::message now_playing_msg(event.command.channel_id, "I ran into an error.",dpp::mt_default);
-        bot.message_create(now_playing_msg);
+        voice_client->insert_marker();
+        _pclose(pipe);
     }
 }
 
-void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, std::uint64_t channel_id, const std::string& filter) {
+void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link,
+                            std::uint64_t channel_id, const std::string &filter) {
     /*
      * Function to stream audio if the bot is already connected to the VC.
      * Takes in a voice_ready_t event
      * Also takes in a channel_id because we lose the channel_id
      * with this voice_ready event.
      */
+    size_t bytes_read;
+    std::byte buf[11520];
 
     bot.log(dpp::ll_debug, "[stream_audio_secondary] -> entering the stream_audio_secondary function!");
-
     if (query_or_link.empty()) {
-        dpp::message no_query_or_link_msg(channel_id, "No query or link provided to stream.", dpp::mt_default);
-        bot.message_create(no_query_or_link_msg);
+        bot.log(dpp::ll_debug, "[stream_audio_secondary] -> no query or link provided, leaving function.");
         return;
+    } else {
+        bot.log(dpp::ll_debug, fmt::format("[stream_audio_secondary] -> query or link of {} found.", query_or_link));
     }
-
-    std::vector<uint8_t> pcmdata;
-    mpg123_init();
-
-    int err = 0;
-    unsigned char* buffer;
-    size_t buffer_size, done;
-    int channels, encoding;
-    long rate;
-
-    /* Note it is important to force the frequency to 48000 for Discord compatibility */
-    mpg123_handle *mh = mpg123_new(nullptr, &err);
-    mpg123_param(mh, MPG123_FORCE_RATE, 48000, 48000.0);
-
-    buffer_size = mpg123_outblock(mh);
-    buffer = new unsigned char[buffer_size];
-
-
-    bot.log(dpp::ll_debug, fmt::format("[stream_audio_secondary] -> user sent in -> {}", query_or_link));
-    std::string full_download_command = fmt::format("{} {}", MP3DOWNLOAD, query_or_link);
-
-    bot.log(dpp::ll_debug, "[stream_audio_secondary] -> downloading the audio.");
-    std::system(full_download_command.c_str());
-    bot.log(dpp::ll_debug, "[stream_audio_secondary] -> finished downloading the audio.");
-
-    mpg123_open(mh, MUSIC_FILE);
-    mpg123_getformat(mh, &rate, &channels, &encoding);
-
-    unsigned int counter = 0;
-    for (int totalBytes = 0; mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK; ) {
-        for (size_t i = 0; i < buffer_size; i++) {
-            pcmdata.push_back(buffer[i]);
-        }
-        counter += buffer_size;
-        totalBytes += done;
-    }
-    delete[] buffer;
-    mpg123_close(mh);
-    mpg123_delete(mh);
-
-
-    dpp::discord_voice_client * voice_client = event.voice_client;
-
+    std::string data = fmt::format(
+            R"(yt-dlp -f bestaudio -o - "{}" | ffmpeg -i pipe: -loglevel warning -f s16le -ac 2 -ar 48000 -acodec pcm_s16le -f wav pipe:)",
+            query_or_link);
+    dpp::discord_voice_client *voice_client = event.voice_client;
     if (voice_client && voice_client->is_ready()) {
-        bot.log(dpp::ll_debug, "[stream_audio_secondary] -> attempting to send the 'now_playing_msg'.");
-        dpp::message now_playing_msg(channel_id, fmt::format("Now playing: {}", query_or_link),dpp::mt_default);
-        bot.message_create(now_playing_msg);
-        voice_client->send_audio_raw((uint16_t *) pcmdata.data(), pcmdata.size());
-    }
-    else {
-        bot.log(dpp::ll_debug, "[stream_audio_secondary] -> attempting to send the 'error_msg'.");
-        dpp::message error_msg(channel_id, "I ran into an error.",dpp::mt_default);
-        bot.message_create(error_msg);
-    }
+        voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
+        // must be "rb" (read binary), "r" causes broken pipe error
+        auto pipe = _popen(data.c_str(), "rb");
+        while (true) {
+            bytes_read = fread(buf, sizeof(std::byte), dpp::send_audio_raw_max_length, pipe);
+            if (bytes_read <= 0)
+                break;
+            if (bytes_read <= dpp::send_audio_raw_max_length) {
+                voice_client->send_audio_raw((uint16_t *) buf, sizeof(buf));
+            }
+        }
+        voice_client->insert_marker();
+        _pclose(pipe);
+        bot.log(dpp::ll_debug, "[stream_audio_secondary] -> sent all audio bytes to discord.");
+    } else
+        bot.log(dpp::ll_debug, "[stream_audio_secondary] -> the voice client was null or was not ready!");
 }
-
-
-
-
