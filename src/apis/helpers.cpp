@@ -106,6 +106,10 @@ std::int8_t tts(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::
         curl_easy_cleanup(curl);
         curl_global_cleanup();
         fclose(fp);
+
+        if (response != 0) {
+            std::cout << "API call to OpenAI to TTS failed!" << std::endl;
+        }
     }
 
     bot.log(dpp::ll_debug, "[tts] -> attempting to read tts.mp3 to send to vc.");
@@ -134,12 +138,9 @@ std::int8_t tts(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::
     dpp::voiceconn* channel = event.from->get_voice(event.command.guild_id);
 
     if (channel && channel->voiceclient && channel->voiceclient->is_ready()) {
-        channel->voiceclient->set_send_audio_type(dpp::discord_voice_client::satype_recorded_audio);
-        bot.log(dpp::ll_debug, "[tts] -> sending tts audio to the vc!");
+        channel->voiceclient->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
+        bot.log(dpp::ll_debug, "[tts] -> attempting to send tts audio to the vc!");
         channel->voiceclient->send_audio_raw((uint16_t *) pcmdata.data(), pcmdata.size());
-    } else {
-        dpp::message msg(event.command.channel_id, "Hey, I would love to talk, but I am not in a VC right now.");
-        bot.message_create(msg);
     }
 
     return 0;

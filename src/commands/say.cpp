@@ -33,6 +33,9 @@ void say_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std:
     }
 
     std::string say_message = std::get<std::string>(event.get_parameter("message"));
+
+    std::replace(say_message.begin(), say_message.end(), '"', '\'');
+
     std::string say_voice = std::get<std::string>(event.get_parameter("voice"));
 
     dpp::voiceconn* channel = event.from->get_voice(event.command.guild_id);
