@@ -86,7 +86,7 @@ void leave_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
         }
         bot.log(dpp::ll_debug, "leaving voice channel.");
         event.from->disconnect_voice(event.command.guild_id);
-        event.reply("Peace out ✌\uFE0F");
+        event.reply("Peace out ✌");
     } else {
         event.reply("I'm not in a VC right now silly!");
     }
@@ -181,10 +181,12 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::stri
 
 void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link,
                           const std::string &filter) {
-/*
+    /*
      * Function to stream audio if the bot is already connected to the VC.
      * Takes in a slashcommand_t event
      */
+    size_t bytes_read;
+    std::byte buf[11520];
 
     if (query_or_link.empty()) {
         dpp::message no_query_or_link_msg(event.command.channel_id, "No query or link provided to stream.",
@@ -192,33 +194,23 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
         bot.message_create(no_query_or_link_msg);
         return;
     }
-
-    std::string data = fmt::format(R"(yt-dlp {} -o - -f bestaudio | (ffmpeg -i pipe:0 -bufsize 50M -loglevel warning -f s16le -ac 2 -ar 48000 pipe:1))", query_or_link);
+    std::string data = fmt::format(
+            R"(yt-dlp -f bestaudio -o - "{}" | ffmpeg -i pipe: -loglevel warning -f s16le -ac 2 -ar 48000 -acodec pcm_s16le -f wav pipe:)",
+            query_or_link);
     dpp::discord_voice_client *voice_client = event.from->get_voice(event.command.guild_id)->voiceclient;
-
-    size_t bytes_read;
-    std::byte buf[11520];
-
     if (voice_client && voice_client->is_ready()) {
-
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
-
-        // Must be "rb"!!!!! just "r" causes broken pipe on windows
+        // must be "rb" (read binary), "r" causes broken pipe error
         auto pipe = _popen(data.c_str(), "rb");
-
         while (true) {
             bytes_read = fread(buf, sizeof(std::byte), dpp::send_audio_raw_max_length, pipe);
-            std::cout << "got the following amount of bytes: " << bytes_read << std::endl;
             if (bytes_read <= 0)
-                    break;
-
+                break;
             if (bytes_read <= dpp::send_audio_raw_max_length) {
                 voice_client->send_audio_raw((uint16_t *) buf, sizeof(buf));
             }
         }
-
         voice_client->insert_marker();
-        std::cout << "closing pipe like a boss!" << std::endl;
         _pclose(pipe);
     }
 }
@@ -231,54 +223,35 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
      * Also takes in a channel_id because we lose the channel_id
      * with this voice_ready event.
      */
+    size_t bytes_read;
+    std::byte buf[11520];
 
     bot.log(dpp::ll_debug, "[stream_audio_secondary] -> entering the stream_audio_secondary function!");
-
     if (query_or_link.empty()) {
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> no query or link provided, leaving function.");
         return;
     } else {
         bot.log(dpp::ll_debug, fmt::format("[stream_audio_secondary] -> query or link of {} found.", query_or_link));
     }
-
     std::string data = fmt::format(
             R"(yt-dlp -f bestaudio -o - "{}" | ffmpeg -i pipe: -loglevel warning -f s16le -ac 2 -ar 48000 -acodec pcm_s16le -f wav pipe:)",
             query_or_link);
-
     dpp::discord_voice_client *voice_client = event.voice_client;
-
-    size_t bytes_read;
-    std::byte buf[11520];
-
     if (voice_client && voice_client->is_ready()) {
-
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
-
-        // Must be "rb"!!!!! just "r" causes broken pipe on windows
+        // must be "rb" (read binary), "r" causes broken pipe error
         auto pipe = _popen(data.c_str(), "rb");
-
         while (true) {
             bytes_read = fread(buf, sizeof(std::byte), dpp::send_audio_raw_max_length, pipe);
-            std::cout << "got the following amount of bytes: " << bytes_read << std::endl;
             if (bytes_read <= 0)
                 break;
-
             if (bytes_read <= dpp::send_audio_raw_max_length) {
                 voice_client->send_audio_raw((uint16_t *) buf, sizeof(buf));
             }
         }
-
         voice_client->insert_marker();
         _pclose(pipe);
-
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> sent all audio bytes to discord.");
-    } else {
+    } else
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> the voice client was null or was not ready!");
-        dpp::message error_msg(channel_id, "An error has occured.", dpp::mt_default);
-        bot.message_create(error_msg);
-    }
 }
-
-
-
-

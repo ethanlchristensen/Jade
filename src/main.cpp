@@ -1,4 +1,5 @@
 #pragma once
+#include <direct.h>
 #include <iostream>
 #include <dpp/dpp.h>
 #include "commands/commands.h"
@@ -7,6 +8,11 @@
 
 
 int main(int argc, char *argv[]) {
+
+    char cwd[1024];
+    if (_getcwd(cwd, sizeof(cwd)) != NULL) {
+        std::cout << "Current working directory: " << cwd << std::endl;
+    }
 
     if (argc != 3) {
         std::cout << "ERROR: Usage: Bot Token and OpenAI API Token must be provided as command line arguments in "
@@ -135,7 +141,9 @@ int main(int argc, char *argv[]) {
     });
 
     bot.on_voice_ready([&bot, &music_query, &channel_id, &filter](const dpp::voice_ready_t &event){
-        stream_audio_secondary(bot, event, music_query, channel_id, filter);
+        if (!music_query.empty()) {
+            stream_audio_secondary(bot, event, music_query, channel_id, filter);
+        }
     });
 
     bot.start(dpp::st_wait);
