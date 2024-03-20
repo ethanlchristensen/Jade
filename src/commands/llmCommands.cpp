@@ -1,5 +1,10 @@
 #include "commands.h"
 #include "../apis/apis.h"
+#include <sqltypes.h>
+#include <sql.h>
+#include <sqlext.h>
+#include <iostream>
+#include <string>
 
 dpp::slashcommand chat_command() {
     // create the command
@@ -75,6 +80,62 @@ void summarize_process(dpp::cluster &bot, const dpp::slashcommand_t &event, cons
     std::string response = llm(apiToken, SYSTEMPROMPT, fmt::format("TASK: {} INPUT: {}", SUMMARIZEPROMPT, pre_user_prompt));
     dpp::message msg(event.command.channel_id, response, dpp::mt_default);
     event.edit_response(msg);
+
+
+    // writing to SQL!!!
+    // https://tenor.com/view/social-credit-gif-23976170
+    SQLHANDLE sqlEnvHandle;
+    SQLHANDLE sqlConnHandle;
+    SQLHANDLE sqlStmtHandle;
+    SQLRETURN retCode;
+
+    // Allocate environment handle
+    if (SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &sqlEnvHandle) != SQL_SUCCESS) {
+        std::cout << "Error allocating environment handle." << std::endl;
+        return;
+    }
+
+    // Set the ODBC version environment attribute
+    if (SQLSetEnvAttr(sqlEnvHandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0) != SQL_SUCCESS) {
+        std::cout << "Error setting ODBC version." << std::endl;
+        return;
+    }
+
+    // Allocate connection handle
+    if (SQLAllocHandle(SQL_HANDLE_DBC, sqlEnvHandle, &sqlConnHandle) != SQL_SUCCESS) {
+        std::cout << "Error allocating connection handle." << std::endl;
+        return;
+    }
+
+    // Connect to the database
+    SQLCHAR* connectionString = (SQLCHAR*)"DRIVER={SQL Server};SERVER=ETCHRIS\\SQLEXPRESS;DATABASE=tododb;Trusted_Connection=yes;";
+    retCode = SQLDriverConnect(sqlConnHandle, NULL, connectionString, SQL_NTS, NULL, 0, NULL, SQL_DRIVER_COMPLETE);
+    if (retCode != SQL_SUCCESS && retCode != SQL_SUCCESS_WITH_INFO) {
+        std::cout << "Error connecting to database." << std::endl;
+        return;
+    }
+
+    // Allocate statement handle
+    if (SQLAllocHandle(SQL_HANDLE_STMT, sqlConnHandle, &sqlStmtHandle) != SQL_SUCCESS) {
+        std::cout << "Error allocating statement handle." << std::endl;
+        return;
+    }
+
+    // Prepare SQL statement
+    std::replace(response.begin(), response.end(), '\'', '\\');
+    std::cout << "SQL QUERY: " << fmt::format("INSERT INTO OpenAiLogging (RecordWrittenUtc, JSONPayload, FunctionCalled) VALUES (GETUTCDATE(), '{}', 'Summarize')", response).c_str() << std::endl;
+    SQLCHAR* query = (SQLCHAR*) fmt::format("INSERT INTO OpenAiLogging (RecordWrittenUtc, JSONPayload, FunctionCalled) VALUES (GETUTCDATE(), '{}', 'Summarize')", response).c_str();
+    retCode = SQLExecDirect(sqlStmtHandle, query, SQL_NTS);
+    if (retCode != SQL_SUCCESS && retCode != SQL_SUCCESS_WITH_INFO) {
+        std::cout << "Error executing SQL statement." << std::endl;
+        return;
+    }
+
+    // Free handles
+    SQLFreeHandle(SQL_HANDLE_STMT, sqlStmtHandle);
+    SQLDisconnect(sqlConnHandle);
+    SQLFreeHandle(SQL_HANDLE_DBC, sqlConnHandle);
+    SQLFreeHandle(SQL_HANDLE_ENV, sqlEnvHandle);
 }
 
 dpp::slashcommand extract_command() {

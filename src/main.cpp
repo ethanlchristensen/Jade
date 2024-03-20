@@ -1,4 +1,5 @@
 #pragma once
+#include <direct.h>
 #include <iostream>
 #include <dpp/dpp.h>
 #include "commands/commands.h"
@@ -7,6 +8,11 @@
 
 
 int main(int argc, char *argv[]) {
+
+    char cwd[1024];
+    if (_getcwd(cwd, sizeof(cwd)) != NULL) {
+        std::cout << "Current working directory: " << cwd << std::endl;
+    }
 
     if (argc != 3) {
         std::cout << "ERROR: Usage: Bot Token and OpenAI API Token must be provided as command line arguments in "
@@ -60,8 +66,13 @@ int main(int argc, char *argv[]) {
             // save the music query and channel_id to pass around as needed
             music_query = std::get<std::string>(event.get_parameter("query_or_link"));
             channel_id = event.command.channel_id;
-            std::string filter_key = std::get<std::string>(event.get_parameter("filter"));
-            filter = FILTERS.at(filter_key);
+            std::variant filter_provided = event.get_parameter("filter");
+            if (filter_provided.index() > 0) {
+                std::string filter_key = std::get<std::string>(filter_provided);
+                filter = FILTERS.at(filter_key);
+            } else {
+                filter = "None";
+            }
             play_process(bot, event, music_query, filter);
         }
         else if (command == "join") {
@@ -84,6 +95,16 @@ int main(int argc, char *argv[]) {
             bot.log(dpp::ll_debug, "/skip called by " + event.command.usr.global_name + ".");
             skip_process(bot, event);
         }
+        else if (command == "say") {
+            bot.log(dpp::ll_debug, "/say called by " + event.command.usr.global_name + ".");
+            if (user == "etchris" || user == "nulzo") {
+                say_process(bot, event, apiToken);
+            }
+        }
+    });
+
+    bot.on_message_create([](const dpp::message_create_t& event) {
+        return;
     });
 
     bot.on_ready([&bot](const dpp::ready_t& event) {
@@ -101,7 +122,8 @@ int main(int argc, char *argv[]) {
                 leave_command(),
                 pause_command(),
                 resume_command(),
-                skip_command()
+                skip_command(),
+                say_command(),
             });
         }
     });
@@ -119,7 +141,9 @@ int main(int argc, char *argv[]) {
     });
 
     bot.on_voice_ready([&bot, &music_query, &channel_id, &filter](const dpp::voice_ready_t &event){
-        stream_audio_secondary(bot, event, music_query, channel_id, filter);
+        if (!music_query.empty()) {
+            stream_audio_secondary(bot, event, music_query, channel_id, filter);
+        }
     });
 
     bot.start(dpp::st_wait);
