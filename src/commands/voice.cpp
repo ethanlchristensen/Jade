@@ -5,6 +5,7 @@
 #include "../apis/apis.h"
 #include "commands.h"
 
+
 dpp::slashcommand play_command() {
     // create the command
     dpp::slashcommand play = dpp::slashcommand();
@@ -201,7 +202,16 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
     if (voice_client && voice_client->is_ready()) {
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
         // must be "rb" (read binary), "r" causes broken pipe error
+#if defined(_WIN32) || defined(_WIN64)
         auto pipe = _popen(data.c_str(), "rb");
+#elif defined(__APPLE__) && defined(__MACH__)
+        auto pipe = popen(data.c_str(), "r");
+        #elif defined(__linux__)
+        auto pipe = popen(data.c_str(), "r");
+        #elif defined(__unix__) || defined(__unix)
+        auto pipe = popen(data.c_str(), "r");
+#endif
+
         while (true) {
             bytes_read = fread(buf, sizeof(std::byte), dpp::send_audio_raw_max_length, pipe);
             if (bytes_read <= 0)
@@ -240,7 +250,15 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
     if (voice_client && voice_client->is_ready()) {
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
         // must be "rb" (read binary), "r" causes broken pipe error
+#if defined(_WIN32) || defined(_WIN64)
         auto pipe = _popen(data.c_str(), "rb");
+#elif defined(__APPLE__) && defined(__MACH__)
+        auto pipe = popen(data.c_str(), "r");
+        #elif defined(__linux__)
+        auto pipe = popen(data.c_str(), "r");
+        #elif defined(__unix__) || defined(__unix)
+        auto pipe = popen(data.c_str(), "r");
+#endif
         while (true) {
             bytes_read = fread(buf, sizeof(std::byte), dpp::send_audio_raw_max_length, pipe);
             if (bytes_read <= 0)
