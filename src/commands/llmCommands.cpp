@@ -1,9 +1,10 @@
-#include "commands.h"
-#include "../apis/apis.h"
+#include "commands/commands.h"
+#include "apis/apis.h"
 #include <iostream>
 #include <string>
 
-dpp::slashcommand chat_command() {
+dpp::slashcommand chat_command()
+{
     // create the command
     dpp::slashcommand chat = dpp::slashcommand();
     chat.set_name("chat");
@@ -12,7 +13,8 @@ dpp::slashcommand chat_command() {
     return chat;
 }
 
-void chat_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string& apiToken) {
+void chat_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string &apiToken)
+{
 
     event.thinking(false);
 
@@ -26,13 +28,17 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std
     // call gpt
     std::string response = llm(apiToken, SYSTEMPROMPT, pre_user_prompt);
     // check to make sure we are 2000 characters, else chunk
-    if (response.size() > 1500) {
+    if (response.size() > 1500)
+    {
         size_t pos = 0;
-        while (pos < response.size()) {
+        while (pos < response.size())
+        {
             size_t end_pos = pos + 1500;
-            if (end_pos < response.size()) { // If not the last chunk
+            if (end_pos < response.size())
+            { // If not the last chunk
                 size_t last_space = response.rfind(' ', end_pos);
-                if (last_space != std::string::npos && last_space > pos) {
+                if (last_space != std::string::npos && last_space > pos)
+                {
                     end_pos = last_space;
                 }
             }
@@ -45,17 +51,21 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std
                 bot.message_create(chunk);
 
             pos = end_pos;
-            if (pos < response.size() && response[pos] == ' ') {
+            if (pos < response.size() && response[pos] == ' ')
+            {
                 ++pos; // Skip the space at the beginning of the next chunk
             }
         }
-    } else {
+    }
+    else
+    {
         dpp::message msg(event.command.channel_id, response, dpp::mt_default);
         event.edit_response(msg);
     }
 }
 
-dpp::slashcommand summarize_command() {
+dpp::slashcommand summarize_command()
+{
     // create the command
     dpp::slashcommand summarize = dpp::slashcommand();
     summarize.set_name("summarize");
@@ -64,7 +74,8 @@ dpp::slashcommand summarize_command() {
     return summarize;
 }
 
-void summarize_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string& apiToken) {
+void summarize_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string &apiToken)
+{
     // run the command
     event.thinking(false);
     std::string pre_user_prompt = std::get<std::string>(event.get_parameter("message"));
@@ -79,7 +90,8 @@ void summarize_process(dpp::cluster &bot, const dpp::slashcommand_t &event, cons
     event.edit_response(msg);
 }
 
-dpp::slashcommand extract_command() {
+dpp::slashcommand extract_command()
+{
     // create the command
     dpp::slashcommand extract = dpp::slashcommand();
     extract.set_name("extract");
@@ -88,7 +100,8 @@ dpp::slashcommand extract_command() {
     return extract;
 }
 
-void extract_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string& apiToken) {
+void extract_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string &apiToken)
+{
     // run the command
     event.thinking(false);
     std::string pre_user_prompt = std::get<std::string>(event.get_parameter("message"));

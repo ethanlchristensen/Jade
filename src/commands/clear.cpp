@@ -1,4 +1,4 @@
-#include "commands.h"
+#include "commands/commands.h"
 
 dpp::slashcommand clear_command() {
     // create the slash command
