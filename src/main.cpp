@@ -1,5 +1,4 @@
 #pragma once
-#include <direct.h>
 #include <iostream>
 #include <dpp/dpp.h>
 #include "commands/commands.h"
@@ -8,12 +7,6 @@
 
 
 int main(int argc, char *argv[]) {
-
-    char cwd[1024];
-    if (_getcwd(cwd, sizeof(cwd)) != NULL) {
-        std::cout << "Current working directory: " << cwd << std::endl;
-    }
-
     if (argc != 3) {
         std::cout << "ERROR: Usage: Bot Token and OpenAI API Token must be provided as command line arguments in "
                      "the order '. . . <bot-token> <openai-api-token>'\n";
