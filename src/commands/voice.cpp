@@ -221,7 +221,15 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
             }
         }
         voice_client->insert_marker();
+        #if defined(_WIN32) || defined(_WIN64)
         _pclose(pipe);
+        #elif defined(__APPLE__) && defined(__MACH__)
+        pclose(pipe);
+        #elif defined(__linux__)
+        pclose(pipe);
+        #elif defined(__unix__) || defined(__unix)
+        pclose(pipe);
+        #endif
     }
 }
 
@@ -250,15 +258,15 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
     if (voice_client && voice_client->is_ready()) {
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
         // must be "rb" (read binary), "r" causes broken pipe error
-#if defined(_WIN32) || defined(_WIN64)
+        #if defined(_WIN32) || defined(_WIN64)
         auto pipe = _popen(data.c_str(), "rb");
-#elif defined(__APPLE__) && defined(__MACH__)
+        #elif defined(__APPLE__) && defined(__MACH__)
         auto pipe = popen(data.c_str(), "r");
         #elif defined(__linux__)
         auto pipe = popen(data.c_str(), "r");
         #elif defined(__unix__) || defined(__unix)
         auto pipe = popen(data.c_str(), "r");
-#endif
+        #endif
         while (true) {
             bytes_read = fread(buf, sizeof(std::byte), dpp::send_audio_raw_max_length, pipe);
             if (bytes_read <= 0)
@@ -268,7 +276,15 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
             }
         }
         voice_client->insert_marker();
+        #if defined(_WIN32) || defined(_WIN64)
         _pclose(pipe);
+        #elif defined(__APPLE__) && defined(__MACH__)
+        pclose(pipe);
+        #elif defined(__linux__)
+        pclose(pipe);
+        #elif defined(__unix__) || defined(__unix)
+        pclose(pipe);
+        #endif
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> sent all audio bytes to discord.");
     } else
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> the voice client was null or was not ready!");

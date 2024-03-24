@@ -1,7 +1,6 @@
 #include <iostream>
 #include <curl/curl.h>
 #include <fmt/core.h>
-#include <nlohmann/json.hpp>
 #include <dpp/dpp.h>
 #include <fmt/format.h>
 #include <iomanip>
