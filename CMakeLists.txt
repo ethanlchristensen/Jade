@@ -19,16 +19,16 @@ find_package(CURL REQUIRED)
 find_library(FFMPEG_LIB avcodec avformat avutil avfilter)
 
 add_executable(${PROJECT_NAME} src/main.cpp
-        src/commands/commands.h
+        include/commands/commands.h
+        include/apis/apis.h
         src/commands/nolan.cpp
         src/commands/clear.cpp
         src/commands/echo.cpp
         src/commands/echo.cpp
-        src/apis/apis.h
         src/commands/llmCommands.cpp
-        src/apis/helpers.cpp
         src/commands/voice.cpp
         src/commands/say.cpp
+        src/apis/helpers.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
