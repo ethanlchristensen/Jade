@@ -1,6 +1,7 @@
-#include "commands.h"
+#include "commands/commands.h"
 
-dpp::slashcommand echo_command() {
+dpp::slashcommand echo_command()
+{
     // create the slash command
     dpp::slashcommand echo = dpp::slashcommand();
     echo.set_name("echo");
@@ -9,7 +10,8 @@ dpp::slashcommand echo_command() {
     return echo;
 }
 
-void echo_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
+void echo_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
+{
     // process the slash command
     dpp::message msg(event.command.channel_id, std::get<std::string>(event.get_parameter("message")));
     event.thinking(true);

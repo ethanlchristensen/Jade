@@ -2,8 +2,6 @@
 #include <iostream>
 #include <dpp/dpp.h>
 #include "commands/commands.h"
-//#include <curlpp/cURLpp.hpp>
-//#include <curlpp/Options.hpp>
 
 
 int main(int argc, char *argv[]) {
