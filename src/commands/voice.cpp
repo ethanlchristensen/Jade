@@ -1,12 +1,11 @@
 #pragma once
-
 #include <utility>
 #include <curl/curl.h>
-#include "../apis/apis.h"
-#include "commands.h"
+#include "apis/apis.h"
+#include "commands/commands.h"
 
-
-dpp::slashcommand play_command() {
+dpp::slashcommand play_command()
+{
     // create the command
     dpp::slashcommand play = dpp::slashcommand();
     play.set_name("play");
@@ -14,14 +13,16 @@ dpp::slashcommand play_command() {
     play.add_option(dpp::command_option(dpp::co_string, "query_or_link", "Link to play or query to search.", true));
     dpp::command_option filters = dpp::command_option(dpp::co_string, "filter", "The filter to apply to the audio.",
                                                       false);
-    for (auto &it: FILTERS) {
+    for (auto &it : FILTERS)
+    {
         filters.add_choice(dpp::command_option_choice(it.first, it.first));
     }
     play.add_option(filters);
     return play;
 }
 
-dpp::slashcommand join_command() {
+dpp::slashcommand join_command()
+{
     // create the command
     dpp::slashcommand join = dpp::slashcommand();
     join.set_name("join");
@@ -29,7 +30,8 @@ dpp::slashcommand join_command() {
     return join;
 }
 
-dpp::slashcommand leave_command() {
+dpp::slashcommand leave_command()
+{
     // create the command
     dpp::slashcommand leave = dpp::slashcommand();
     leave.set_name("leave");
@@ -37,7 +39,8 @@ dpp::slashcommand leave_command() {
     return leave;
 }
 
-dpp::slashcommand pause_command() {
+dpp::slashcommand pause_command()
+{
     // create the command
     dpp::slashcommand pause = dpp::slashcommand();
     pause.set_name("pause");
@@ -45,7 +48,8 @@ dpp::slashcommand pause_command() {
     return pause;
 }
 
-dpp::slashcommand resume_command() {
+dpp::slashcommand resume_command()
+{
     // create the command
     dpp::slashcommand resume = dpp::slashcommand();
     resume.set_name("resume");
@@ -53,7 +57,8 @@ dpp::slashcommand resume_command() {
     return resume;
 }
 
-dpp::slashcommand skip_command() {
+dpp::slashcommand skip_command()
+{
     // create the command
     dpp::slashcommand skip = dpp::slashcommand();
     skip.set_name("skip");
@@ -61,14 +66,16 @@ dpp::slashcommand skip_command() {
     return skip;
 }
 
-void join_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
+void join_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
+{
 
     event.thinking(true);
     event.edit_response("Processing your request!");
 
     dpp::guild *g = dpp::find_guild(event.command.guild_id);
 
-    if (!g->connect_member_voice(event.command.get_issuing_user().id)) {
+    if (!g->connect_member_voice(event.command.get_issuing_user().id))
+    {
         dpp::message error_msg(event.command.channel_id,
                                "I would love to play some music, but don't you want to listen too?", dpp::mt_default);
         bot.message_create(error_msg);
@@ -76,86 +83,110 @@ void join_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
     }
 }
 
-void leave_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
+void leave_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
+{
 
     dpp::voiceconn *v = event.from->get_voice(event.command.guild_id);
 
-    if (v) {
-        if (v->voiceclient->is_playing()) {
+    if (v)
+    {
+        if (v->voiceclient->is_playing())
+        {
             bot.log(dpp::ll_debug, "bot is playing audio, stopping audio.");
             v->voiceclient->stop_audio();
         }
         bot.log(dpp::ll_debug, "leaving voice channel.");
         event.from->disconnect_voice(event.command.guild_id);
         event.reply("Peace out ✌");
-    } else {
+    }
+    else
+    {
         event.reply("I'm not in a VC right now silly!");
     }
 }
 
-void pause_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
+void pause_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
+{
 
     dpp::voiceconn *v = event.from->get_voice(event.command.guild_id);
 
-    if (!v || !v->voiceclient) {
+    if (!v || !v->voiceclient)
+    {
         event.reply("I am not in a VC, nothing to pause!");
         return;
     }
 
-    if (v->voiceclient->is_playing()) {
+    if (v->voiceclient->is_playing())
+    {
         v->voiceclient->pause_audio(true);
         event.reply("Paused the audio!");
-    } else {
+    }
+    else
+    {
         event.reply("Nothing to pause!");
     }
 }
 
-void resume_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
+void resume_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
+{
 
     dpp::voiceconn *v = event.from->get_voice(event.command.guild_id);
 
-    if (!v || !v->voiceclient) {
+    if (!v || !v->voiceclient)
+    {
         event.reply("I am not in a VC, nothing to resume!");
         return;
     }
 
-    if (v->voiceclient->is_paused()) {
+    if (v->voiceclient->is_paused())
+    {
         v->voiceclient->pause_audio(false);
         event.reply("Resumed the audio!");
-    } else {
+    }
+    else
+    {
         event.reply("Nothing to resume!");
     }
 }
 
-void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event) {
+void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
+{
 
     dpp::voiceconn *v = event.from->get_voice(event.command.guild_id);
 
     dpp::guild *guild = dpp::find_guild(event.command.guild_id);
 
-    if (v && v->voiceclient) {
-        if (v->voiceclient->is_playing()) {
+    if (v && v->voiceclient)
+    {
+        if (v->voiceclient->is_playing())
+        {
             v->voiceclient->stop_audio();
             dpp::message success_msg(event.command.channel_id, "Skipped the song!", dpp::mt_default);
             event.reply(success_msg);
-        } else {
+        }
+        else
+        {
             dpp::message error_msg(event.command.channel_id, "There is no song to skip!", dpp::mt_default);
             event.reply(error_msg);
         }
-    } else {
+    }
+    else
+    {
         dpp::message not_in_voice_msg(event.command.channel_id, "I cannot skip a song if I am not in VC!");
         event.reply(not_in_voice_msg);
     }
 }
 
 void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link,
-                  const std::string &filter) {
+                  const std::string &filter)
+{
 
     event.thinking(true);
 
     dpp::guild *guild = dpp::find_guild(event.command.guild_id);
 
-    if (!guild->connect_member_voice(event.command.get_issuing_user().id)) {
+    if (!guild->connect_member_voice(event.command.get_issuing_user().id))
+    {
         dpp::message error_msg(event.command.channel_id,
                                "I would love to play some music, but don't you want to listen too?", dpp::mt_default);
         event.edit_response(error_msg);
@@ -164,24 +195,30 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::stri
 
     dpp::voiceconn *channel = event.from->get_voice(event.command.guild_id);
 
-    if (channel && channel->voiceclient && channel->voiceclient->is_ready()) {
-        if (channel->voiceclient->is_playing()) {
+    if (channel && channel->voiceclient && channel->voiceclient->is_ready())
+    {
+        if (channel->voiceclient->is_playing())
+        {
             event.edit_response("I am playing something right now, leave me alone!");
-        } else {
+        }
+        else
+        {
             bot.log(dpp::ll_debug, "Jade in VC, streaming audio.");
             event.edit_response("Processing your request!");
             stream_audio_primary(bot, event, std::move(query_or_link), filter);
         }
-    } else {
+    }
+    else
+    {
         bot.log(dpp::ll_debug, "Jade not in VC, attempting to connect then stream.");
         event.edit_response("Processing your request!");
         event.from->connect_voice(guild->id, event.command.channel_id, false, true);
     }
 }
 
-
 void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link,
-                          const std::string &filter) {
+                          const std::string &filter)
+{
     /*
      * Function to stream audio if the bot is already connected to the VC.
      * Takes in a slashcommand_t event
@@ -189,52 +226,57 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
     size_t bytes_read;
     std::byte buf[11520];
 
-    if (query_or_link.empty()) {
+    if (query_or_link.empty())
+    {
         dpp::message no_query_or_link_msg(event.command.channel_id, "No query or link provided to stream.",
                                           dpp::mt_default);
         bot.message_create(no_query_or_link_msg);
         return;
     }
     std::string data = fmt::format(
-            R"(yt-dlp -f bestaudio -o - "{}" | ffmpeg -i pipe: -loglevel warning -f s16le -ac 2 -ar 48000 -acodec pcm_s16le -f wav pipe:)",
-            query_or_link);
+        R"(yt-dlp -f bestaudio -o - "{}" | ffmpeg -i pipe: -loglevel warning -f s16le -ac 2 -ar 48000 -acodec pcm_s16le -f wav pipe:)",
+        query_or_link);
     dpp::discord_voice_client *voice_client = event.from->get_voice(event.command.guild_id)->voiceclient;
-    if (voice_client && voice_client->is_ready()) {
+    if (voice_client && voice_client->is_ready())
+    {
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
         // must be "rb" (read binary), "r" causes broken pipe error
 #if defined(_WIN32) || defined(_WIN64)
         auto pipe = _popen(data.c_str(), "rb");
 #elif defined(__APPLE__) && defined(__MACH__)
         auto pipe = popen(data.c_str(), "r");
-        #elif defined(__linux__)
+#elif defined(__linux__)
         auto pipe = popen(data.c_str(), "r");
-        #elif defined(__unix__) || defined(__unix)
+#elif defined(__unix__) || defined(__unix)
         auto pipe = popen(data.c_str(), "r");
 #endif
 
-        while (true) {
+        while (true)
+        {
             bytes_read = fread(buf, sizeof(std::byte), dpp::send_audio_raw_max_length, pipe);
             if (bytes_read <= 0)
                 break;
-            if (bytes_read <= dpp::send_audio_raw_max_length) {
-                voice_client->send_audio_raw((uint16_t *) buf, sizeof(buf));
+            if (bytes_read <= dpp::send_audio_raw_max_length)
+            {
+                voice_client->send_audio_raw((uint16_t *)buf, sizeof(buf));
             }
         }
         voice_client->insert_marker();
-        #if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32) || defined(_WIN64)
         _pclose(pipe);
-        #elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(__APPLE__) && defined(__MACH__)
         pclose(pipe);
-        #elif defined(__linux__)
+#elif defined(__linux__)
         pclose(pipe);
-        #elif defined(__unix__) || defined(__unix)
+#elif defined(__unix__) || defined(__unix)
         pclose(pipe);
-        #endif
+#endif
     }
 }
 
 void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link,
-                            std::uint64_t channel_id, const std::string &filter) {
+                            std::uint64_t channel_id, const std::string &filter)
+{
     /*
      * Function to stream audio if the bot is already connected to the VC.
      * Takes in a voice_ready_t event
@@ -245,47 +287,54 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
     std::byte buf[11520];
 
     bot.log(dpp::ll_debug, "[stream_audio_secondary] -> entering the stream_audio_secondary function!");
-    if (query_or_link.empty()) {
+    if (query_or_link.empty())
+    {
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> no query or link provided, leaving function.");
         return;
-    } else {
+    }
+    else
+    {
         bot.log(dpp::ll_debug, fmt::format("[stream_audio_secondary] -> query or link of {} found.", query_or_link));
     }
     std::string data = fmt::format(
-            R"(yt-dlp -f bestaudio -o - "{}" | ffmpeg -i pipe: -loglevel warning -f s16le -ac 2 -ar 48000 -acodec pcm_s16le -f wav pipe:)",
-            query_or_link);
+        R"(yt-dlp -f bestaudio -o - "{}" | ffmpeg -i pipe: -loglevel warning -f s16le -ac 2 -ar 48000 -acodec pcm_s16le -f wav pipe:)",
+        query_or_link);
     dpp::discord_voice_client *voice_client = event.voice_client;
-    if (voice_client && voice_client->is_ready()) {
+    if (voice_client && voice_client->is_ready())
+    {
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
-        // must be "rb" (read binary), "r" causes broken pipe error
-        #if defined(_WIN32) || defined(_WIN64)
+// must be "rb" (read binary), "r" causes broken pipe error
+#if defined(_WIN32) || defined(_WIN64)
         auto pipe = _popen(data.c_str(), "rb");
-        #elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(__APPLE__) && defined(__MACH__)
         auto pipe = popen(data.c_str(), "r");
-        #elif defined(__linux__)
+#elif defined(__linux__)
         auto pipe = popen(data.c_str(), "r");
-        #elif defined(__unix__) || defined(__unix)
+#elif defined(__unix__) || defined(__unix)
         auto pipe = popen(data.c_str(), "r");
-        #endif
-        while (true) {
+#endif
+        while (true)
+        {
             bytes_read = fread(buf, sizeof(std::byte), dpp::send_audio_raw_max_length, pipe);
             if (bytes_read <= 0)
                 break;
-            if (bytes_read <= dpp::send_audio_raw_max_length) {
-                voice_client->send_audio_raw((uint16_t *) buf, sizeof(buf));
+            if (bytes_read <= dpp::send_audio_raw_max_length)
+            {
+                voice_client->send_audio_raw((uint16_t *)buf, sizeof(buf));
             }
         }
         voice_client->insert_marker();
-        #if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32) || defined(_WIN64)
         _pclose(pipe);
-        #elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(__APPLE__) && defined(__MACH__)
         pclose(pipe);
-        #elif defined(__linux__)
+#elif defined(__linux__)
         pclose(pipe);
-        #elif defined(__unix__) || defined(__unix)
+#elif defined(__unix__) || defined(__unix)
         pclose(pipe);
-        #endif
+#endif
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> sent all audio bytes to discord.");
-    } else
+    }
+    else
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> the voice client was null or was not ready!");
 }
