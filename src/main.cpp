@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
                 std::string filter_key = std::get<std::string>(filter_provided);
                 filter = FILTERS.at(filter_key);
             } else {
-                filter = "None";
+                filter = "";
             }
             play_process(bot, event, music_query, filter);
         }

@@ -26,7 +26,7 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std
     std::replace(pre_user_prompt.begin(), pre_user_prompt.end(), '}', ' ');
     std::replace(pre_user_prompt.begin(), pre_user_prompt.end(), '\\', ' ');
     // call gpt
-    std::string response = llm(apiToken, SYSTEMPROMPT, pre_user_prompt);
+    std::string response = llm(apiToken, pre_user_prompt);
     // check to make sure we are 2000 characters, else chunk
     if (response.size() > 1500)
     {
@@ -85,7 +85,7 @@ void summarize_process(dpp::cluster &bot, const dpp::slashcommand_t &event, cons
     std::replace(pre_user_prompt.begin(), pre_user_prompt.end(), '}', ' ');
     std::replace(pre_user_prompt.begin(), pre_user_prompt.end(), '\\', ' ');
     // call gpt
-    std::string response = llm(apiToken, SYSTEMPROMPT, fmt::format("TASK: {} INPUT: {}", SUMMARIZEPROMPT, pre_user_prompt));
+    std::string response = llm(apiToken, fmt::format("TASK: {} INPUT: {}", SUMMARIZEPROMPT, pre_user_prompt));
     dpp::message msg(event.command.channel_id, response, dpp::mt_default);
     event.edit_response(msg);
 }
@@ -111,7 +111,7 @@ void extract_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const 
     std::replace(pre_user_prompt.begin(), pre_user_prompt.end(), '}', ' ');
     std::replace(pre_user_prompt.begin(), pre_user_prompt.end(), '\\', ' ');
     // call gpt
-    std::string response = llm(apiToken, SYSTEMPROMPT, fmt::format("TASK: {} INPUT: {}", EXTRACTPROMPT, pre_user_prompt));
+    std::string response = llm(apiToken, fmt::format("TASK: {} INPUT: {}", EXTRACTPROMPT, pre_user_prompt));
     dpp::message msg(event.command.channel_id, response, dpp::mt_default);
     event.edit_response(msg);
 }
