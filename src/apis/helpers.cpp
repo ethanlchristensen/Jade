@@ -69,11 +69,7 @@ std::int8_t tts(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::
     CURLcode response;
 #if defined(_WIN32) || defined(_WIN64)
     errno_t err;
-#elif defined(__APPLE__) && defined(__MACH__)
-    error_t err;
-#elif defined(__linux__)
-    error_t err;
-#elif defined(__unix__) || defined(__unix)
+#else
     error_t err;
 #endif
     std::vector<uint8_t> pcmdata;
@@ -89,40 +85,20 @@ std::int8_t tts(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::
     curl = curl_easy_init();
     if (curl)
     {
-
         bot.log(dpp::ll_debug, "[tts] -> attempting to download tts message.");
-
-#if defined(_WIN32) || defined(_WIN64)
-        err = fopen_s(&fp, TTSFILE, "wb");
-#elif defined(__APPLE__) && defined(__MACH__)
-        fp = fopen(TTSFILE, "wb");
-#elif defined(__linux__)
-        fp = fopen(TTSFILE, "wb");
-#elif defined(__unix__) || defined(__unix)
-        fp = fopen(TTSFILE, "wb");
-#endif
-
-#if defined(_WIN32) || defined(_WIN64)
-        if (err != 0)
-        {
-            return -1;
-        }
-#elif defined(__APPLE__) && defined(__MACH__)
-        if (fp == NULL)
-        {
-            return -1;
-        }
-#elif defined(__linux__)
-        if (fp == NULL)
-        {
-            return -1;
-        }
-#elif defined(__unix__) || defined(__unix)
-        if (fp == NULL)
-        {
-            return -1;
-        }
-#endif
+        #if defined(_WIN32) || defined(_WIN64)
+            err = fopen_s(&fp, TTSFILE, "wb");
+            if (err != 0)
+            {
+                return -1;
+            }
+        #else
+            fp = fopen(TTSFILE, "wb");
+            if (fp == NULL)
+            {
+                return -1;
+            }
+        #endif
 
         struct curl_slist *headers = nullptr;
         std::string auth = fmt::format("Authorization: Bearer {}", apiToken);
@@ -195,15 +171,11 @@ std::string findExecutablePath(const std::string &exeName)
     std::string cmd = "where " + exeName;
     std::array<char, 128> buffer;
     std::string result;
-#if defined(_WIN32) || defined(_WIN64)
-    auto pipe = _popen(data.c_str(), "rb");
-#elif defined(__APPLE__) && defined(__MACH__)
-    FILE *pipe = popen(cmd.c_str(), "r");
-#elif defined(__linux__)
-    FILE *pipe = popen(cmd.c_str(), "r");
-#elif defined(__unix__) || defined(__unix)
-    FILE *pipe = popen(cmd.c_str(), "r");
-#endif
+    #if defined(_WIN32) || defined(_WIN64)
+        auto pipe = _popen(cmd.c_str(), "rb");
+    #else
+        FILE *pipe = popen(cmd.c_str(), "r");
+    #endif
     if (!pipe)
     {
         std::cerr << "popen failed: " << strerror(errno) << '\n';
@@ -214,14 +186,10 @@ std::string findExecutablePath(const std::string &exeName)
         result += buffer.data();
     }
 
-#if defined(_WIN32) || defined(_WIN64)
-    _pclose(pipe);
-#elif defined(__APPLE__) && defined(__MACH__)
-    pclose(pipe);
-#elif defined(__linux__)
-    pclose(pipe);
-#elif defined(__unix__) || defined(__unix)
-    pclose(pipe);
-#endif
+    #if defined(_WIN32) || defined(_WIN64)
+        _pclose(pipe);
+    #else
+        pclose(pipe);
+    #endif
     return result.substr(0, result.find('\n')); // get the first line of output
 }
