@@ -1,6 +1,4 @@
 #pragma once
-#include <bitset>
-#include <cstddef>
 #include <utility>
 #include <curl/curl.h>
 #include "apis/apis.h"
@@ -223,35 +221,25 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
 {
     /*
      * Function to stream audio if the bot is already connected to the VC.
+     * Takes in a slashcommand_t event
      */
     size_t bytes_read;
     std::byte buf[11520];
 
-    bot.log(dpp::ll_debug, "[stream_audio_primary] -> entering the stream_audio_primaryfunction.");
     if (query_or_link.empty())
     {
-        bot.log(dpp::ll_debug, "[stream_audio_primary] -> no query or link provided, leaving function.");
         dpp::message no_query_or_link_msg(event.command.channel_id, "No query or link provided to stream.",
                                           dpp::mt_default);
         bot.message_create(no_query_or_link_msg);
         return;
     }
     std::string data = fmt::format(
-        R"(yt-dlp -S +hdr -f bestaudio -o - "{}" | ffmpeg -i pipe: -loglevel warning -f s16le -ac 2 -ar 48000 -acodec pcm_s16le -f wav)",
+        R"(yt-dlp -f bestaudio -o - "{}" | ffmpeg -i pipe: -loglevel warning -f s16le -ac 2 -ar 48000 -acodec pcm_s16le -f wav pipe:)",
         query_or_link);
-
-    if (!filter.empty()) data += fmt::format(" -vn -filter_complex {} pipe:", filter);
-    else data += " pipe:";
-
     dpp::discord_voice_client *voice_client = event.from->get_voice(event.command.guild_id)->voiceclient;
     if (voice_client && voice_client->is_ready())
     {
-        bot.log(dpp::ll_debug, "[stream_audio_primary] -> now playing " + query_or_link);
-        dpp::message now_playing_message(event.command.channel_id, "Now playing: " + query_or_link,
-                                          dpp::mt_default);
-        bot.message_create(now_playing_message);
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
-
         // should be 'rb' on windows
         #if defined(_WIN32) || defined(_WIN64)
             auto pipe = _popen(data.c_str(), "rb");
@@ -265,7 +253,9 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
             if (bytes_read <= 0)
                 break;
             if (bytes_read <= dpp::send_audio_raw_max_length)
+            {
                 voice_client->send_audio_raw((uint16_t *)buf, sizeof(buf));
+            }
         }
         voice_client->insert_marker();
         #if defined(_WIN32) || defined(_WIN64)
@@ -282,34 +272,29 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
 {
     /*
      * Function to stream audio if the bot is already connected to the VC.
+     * Takes in a voice_ready_t event
+     * Also takes in a channel_id because we lose the channel_id
+     * with this voice_ready event.
      */
     size_t bytes_read;
     std::byte buf[11520];
 
-    bot.log(dpp::ll_debug, "[stream_audio_secondary] -> entering the stream_audio_secondary function.");
+    bot.log(dpp::ll_debug, "[stream_audio_secondary] -> entering the stream_audio_secondary function!");
     if (query_or_link.empty())
     {
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> no query or link provided, leaving function.");
-        dpp::message no_query_or_link_msg(channel_id, "No query or link provided to stream.",
-                                    dpp::mt_default);
-        bot.message_create(no_query_or_link_msg);
         return;
     }
-
+    else
+    {
+        bot.log(dpp::ll_debug, fmt::format("[stream_audio_secondary] -> query or link of {} found.", query_or_link));
+    }
     std::string data = fmt::format(
-        R"(yt-dlp -S +hdr -f bestaudio -o - "{}" | ffmpeg -i pipe: -loglevel warning -f s16le -ac 2 -ar 48000 -acodec pcm_s16le -f wav)",
+        R"(yt-dlp -f bestaudio -o - "{}" | ffmpeg -i pipe: -loglevel warning -f s16le -ac 2 -ar 48000 -acodec pcm_s16le -f wav pipe:)",
         query_or_link);
-
-    if (!filter.empty()) data += fmt::format(" -vn -filter_complex {} pipe:", filter);
-    else data += " pipe:";
-
     dpp::discord_voice_client *voice_client = event.voice_client;
     if (voice_client && voice_client->is_ready())
     {
-        bot.log(dpp::ll_debug, "[stream_audio_secondary] -> now playing " + query_or_link);
-        dpp::message now_playing_message(channel_id, "Now playing: " + query_or_link,
-                                    dpp::mt_default);
-        bot.message_create(now_playing_message);
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
         // should be 'rb' on windows
         #if defined(_WIN32) || defined(_WIN64)
@@ -323,7 +308,9 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
             if (bytes_read <= 0)
                 break;
             if (bytes_read <= dpp::send_audio_raw_max_length)
+            {
                 voice_client->send_audio_raw((uint16_t *)buf, sizeof(buf));
+            }
         }
         voice_client->insert_marker();
         #if defined(_WIN32) || defined(_WIN64)
@@ -334,5 +321,5 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> all audio bytes to discord.");
     }
     else
-        bot.log(dpp::ll_debug, "[stream_audio_secondary] -> the voice client was null or was not ready.");
+        bot.log(dpp::ll_debug, "[stream_audio_secondary] -> the voice client was null or was not ready!");
 }
