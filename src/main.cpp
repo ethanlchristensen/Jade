@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
         }
         else if (command == "say") {
             bot.log(dpp::ll_debug, "/say called by " + event.command.usr.global_name + ".");
-            if (user == "etchris" || user == "nulzo") {
+            if (user == "etchris") {
                 say_process(bot, event, apiToken);
             }
         }

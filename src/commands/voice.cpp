@@ -253,7 +253,11 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
 
         // should be 'rb' on windows
-        auto pipe = popen(data.c_str(), "r");
+        #if defined(_WIN32) || defined(_WIN64)
+            auto pipe = _popen(data.c_str(), "rb");
+        #else
+            auto pipe = popen(data.c_str(), "r");
+        #endif
         // send all audio bytes from pipe to discord
         while (true)
         {
@@ -264,7 +268,11 @@ void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, s
                 voice_client->send_audio_raw((uint16_t *)buf, sizeof(buf));
         }
         voice_client->insert_marker();
-        pclose(pipe);
+        #if defined(_WIN32) || defined(_WIN64)
+            _pclose(pipe);
+        #else
+            pclose(pipe);
+        #endif
         bot.log(dpp::ll_debug, "[stream_audio_primary] -> all audio bytes send to discord.");
     }
 }
@@ -304,7 +312,11 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
         bot.message_create(now_playing_message);
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
         // should be 'rb' on windows
-        auto pipe = popen(data.c_str(), "r");
+        #if defined(_WIN32) || defined(_WIN64)
+            auto pipe = _popen(data.c_str(), "rb");
+        #else
+            auto pipe = popen(data.c_str(), "r");
+        #endif
         while (true)
         {
             bytes_read = fread(buf, sizeof(std::byte), dpp::send_audio_raw_max_length, pipe);
@@ -314,7 +326,11 @@ void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, 
                 voice_client->send_audio_raw((uint16_t *)buf, sizeof(buf));
         }
         voice_client->insert_marker();
-        pclose(pipe);
+        #if defined(_WIN32) || defined(_WIN64)
+            _pclose(pipe);
+        #else
+            pclose(pipe);
+        #endif
         bot.log(dpp::ll_debug, "[stream_audio_secondary] -> all audio bytes to discord.");
     }
     else

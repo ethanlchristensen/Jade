@@ -18,9 +18,9 @@
 
 using json = nlohmann::json;
 
-#define OPENAIURL "192.168.1.11:11434/api/chat"
+#define OPENAIURL "127.0.0.1:11434/api/chat"
 #define OPENAITTS "https://api.openai.com/v1/audio/speech"
-#define MODEL "Jade"
+#define MODEL "Marcus"
 #define TTSMODEL "tts-1"
 #define TTSFILE "./audio/tts.mp3"
 
