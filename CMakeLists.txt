@@ -24,11 +24,25 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/commands/nolan.cpp
         src/commands/clear.cpp
         src/commands/echo.cpp
-        src/commands/echo.cpp
         src/commands/llmCommands.cpp
-        src/commands/voice.cpp
         src/commands/say.cpp
         src/apis/helpers.cpp
+        src/utils/jade_queue.cpp
+        include/utils/jade_queue.h
+        src/commands/voice/play_command.cpp
+        include/commands/voice/play_command.h
+        src/commands/voice/skip_command.cpp
+        include/commands/voice/skip_command.h
+        src/commands/voice/pause_command.cpp
+        include/commands/voice/pause_command.h
+        src/commands/voice/resume_command.cpp
+        include/commands/voice/resume_command.h
+        src/utils/voice/stream_audio.cpp
+        include/utils/voice/stream_audio.h
+        src/commands/voice/join_command.cpp
+        include/commands/voice/join_command.h
+        src/commands/voice/leave_command.cpp
+        include/commands/voice/leave_command.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

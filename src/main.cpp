@@ -2,6 +2,12 @@
 #include <iostream>
 #include <dpp/dpp.h>
 #include "commands/commands.h"
+#include "commands/voice/join_command.h"
+#include "commands/voice/leave_command.h"
+#include "commands/voice/play_command.h"
+#include "commands/voice/pause_command.h"
+#include "commands/voice/resume_command.h"
+#include "commands/voice/skip_command.h"
 
 
 int main(int argc, char *argv[]) {
@@ -17,7 +23,7 @@ int main(int argc, char *argv[]) {
 
     const std::string& apiToken = argv[2];
 
-    uint64_t intents = dpp::i_all_intents;
+    uint64_t intents = dpp::i_all_intents | dpp::i_message_content;
 
     dpp::cluster bot(argv[1], intents);
 
@@ -117,6 +123,7 @@ int main(int argc, char *argv[]) {
                 say_command(),
             });
         }
+        bot.set_presence(dpp::presence(dpp::ps_online, dpp::at_custom, "Locked, Loaded, and Ready to beat Cringe."));
     });
 
     bot.on_guild_member_update([&bot](const dpp::guild_member_update_t& event) {

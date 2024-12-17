@@ -1,0 +1,23 @@
+#ifndef JADE_QUEUE_H
+#define JADE_QUEUE_H
+
+#include <string>
+#include <queue>
+#include <dpp/dpp.h>
+
+struct SongRequest {
+    std::string query;
+    std::string filter;
+};
+
+class JadeQueue {
+public:
+    void addRequest(const std::string& query, const std::string& filter);
+    SongRequest nextRequest();
+    [[nodiscard]] bool isEmpty() const;
+
+private:
+    std::queue<SongRequest> songQueue;
+};
+
+#endif // JADE_QUEUE_H
