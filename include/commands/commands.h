@@ -16,6 +16,7 @@
 #include <opus/opus.h>
 #include <out123.h>
 
+
 dpp::slashcommand nolan_command();
 
 dpp::slashcommand clear_command();
@@ -41,9 +42,5 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std
 void summarize_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string &apiToken);
 
 void extract_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string &apiToken);
-
-void stream_audio_primary(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link, const std::string& filter);
-
-void stream_audio_secondary(dpp::cluster &bot, const dpp::voice_ready_t &event, std::string query_or_link, std::uint64_t channel_id, const std::string& filter);
 
 void say_process(dpp::cluster &bot, const dpp::slashcommand_t &event, const std::string &apiToken);

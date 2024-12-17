@@ -19,7 +19,7 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
     return written;
 }
 
-std::string llm(const std::string &apiToken, const std::string &user_prompt)
+std::string llm(const std::string &apiToken, const std::string &system_prompt, const std::string &user_prompt)
 {
     // command to response to the users prompt
     CURL *curl;
@@ -31,15 +31,15 @@ std::string llm(const std::string &apiToken, const std::string &user_prompt)
     if (curl)
     {
         struct curl_slist *headers = nullptr;
-        // std::string auth = fmt::format("Authorization: Bearer {}", apiToken);
-        // headers = curl_slist_append(headers, "Content-Type: application/json");
-        // headers = curl_slist_append(headers, auth.c_str());
+        std::string auth = fmt::format("Authorization: Bearer {}", apiToken);
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        headers = curl_slist_append(headers, auth.c_str());
         std::string data = fmt::format(
-            R"({{"model": "{}", "stream": false, "messages": [{{"role": "user", "content": "{}" }}]}})",
-            MODEL, user_prompt);
+            R"({{"model": "{}","messages": [{{"role": "system","content": "{}" }},{{"role": "user", "content": "{}" }}],"temperature": 1,"max_tokens": 500, "top_p": 1,"frequency_penalty": 0,"presence_penalty": 0 }})",
+            MODEL, system_prompt, user_prompt);
 
         curl_easy_setopt(curl, CURLOPT_URL, OPENAIURL);
-        // curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
@@ -51,7 +51,7 @@ std::string llm(const std::string &apiToken, const std::string &user_prompt)
         if (response == 0)
         {
             json responseJson = json::parse(readBuffer);
-            return responseJson["message"]["content"];
+            return responseJson["choices"][0]["message"]["content"];
         }
         else
         {
