@@ -1,9 +1,13 @@
 #include "utils/jade_queue.h"
 #include <stdexcept>
 
-void JadeQueue::addRequest(const std::string& query, const std::string& filter) {
-    SongRequest request{query, filter};
+void JadeQueue::addRequest(const std::string& query, const std::string& filter, dpp::slashcommand_t &event) {
+    SongRequest request{query, filter, event};
     songQueue.push(request);
+}
+
+void JadeQueue::addSong(const SongRequest newSong) {
+    songQueue.push(newSong);
 }
 
 SongRequest JadeQueue::nextRequest() {
@@ -16,5 +20,6 @@ SongRequest JadeQueue::nextRequest() {
 }
 
 bool JadeQueue::isEmpty() const {
+    std::cout << "[isEmpty] Size of the Queue is: " << songQueue.size() << "\n";
     return songQueue.empty();
 }

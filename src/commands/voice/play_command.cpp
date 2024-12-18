@@ -17,40 +17,41 @@ dpp::slashcommand play_command()
     return play;
 }
 
-void play_process(dpp::cluster &bot, const dpp::slashcommand_t &event, std::string query_or_link,
-                  const std::string &filter)
+void play_process(dpp::cluster &bot, SongRequest song, JadeQueue &queue)
 {
-    event.thinking(true);
+    song.event.thinking(true);
 
-    dpp::guild *guild = dpp::find_guild(event.command.guild_id);
+    dpp::guild *guild = dpp::find_guild(song.event.command.guild_id);
 
-    if (!guild->connect_member_voice(event.command.get_issuing_user().id))
+    if (!guild->connect_member_voice(song.event.command.get_issuing_user().id))
     {
-        dpp::message error_msg(event.command.channel_id,
+        dpp::message error_msg(song.event.command.channel_id,
                                "I would love to play some music, but don't you want to listen too?", dpp::mt_default);
-        event.edit_response(error_msg);
+        song.event.edit_response(error_msg);
         return;
     }
 
-    dpp::voiceconn *channel = event.from->get_voice(event.command.guild_id);
+    dpp::voiceconn *channel = song.event.from->get_voice(song.event.command.guild_id);
 
     if (channel && channel->voiceclient && channel->voiceclient->is_ready())
     {
         if (channel->voiceclient->is_playing())
         {
-            event.edit_response("I am playing something right now, leave me alone!");
+            std::cout << "Adding Song to the Queue\n";
+            song.event.edit_response("Adding your request to the queue!");
+            queue.addSong(song);
         }
         else
         {
             bot.log(dpp::ll_debug, "Jade in VC, streaming audio.");
-            event.edit_response("Processing your request!");
-            stream_audio_to_discord(bot, event, std::move(query_or_link), filter);
+            song.event.edit_response("Processing your request!");
+            stream_audio_to_discord(bot, song);
         }
     }
     else
     {
         bot.log(dpp::ll_debug, "Jade not in VC, attempting to connect then stream.");
-        event.edit_response("Processing your request!");
-        event.from->connect_voice(guild->id, event.command.channel_id, false, true);
+        song.event.edit_response("Processing your request!");
+        song.event.from->connect_voice(guild->id, song.event.command.channel_id, false, true);
     }
 }
