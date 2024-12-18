@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <dpp/dpp.h>
+
 #include "commands/commands.h"
 #include "commands/voice/join_command.h"
 #include "commands/voice/leave_command.h"
@@ -8,6 +9,9 @@
 #include "commands/voice/pause_command.h"
 #include "commands/voice/resume_command.h"
 #include "commands/voice/skip_command.h"
+
+#include "utils/voice/stream_audio.h"
+#include "utils/jade_queue.h"
 
 
 int main(int argc, char *argv[]) {
@@ -17,20 +21,16 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    std::string music_query;
-    std::uint64_t channel_id;
-    std::string filter;
+    uint64_t intents = dpp::i_all_intents | dpp::i_message_content;
+    dpp::cluster bot(argv[1], intents);
 
     const std::string& apiToken = argv[2];
+    JadeQueue songQueue;
 
-    uint64_t intents = dpp::i_all_intents | dpp::i_message_content;
-
-    dpp::cluster bot(argv[1], intents);
 
     bot.on_log(dpp::utility::cout_logger());
 
-    bot.on_slashcommand([&bot, &apiToken, &music_query, &channel_id, &filter](const dpp::slashcommand_t& event) {
-
+    bot.on_slashcommand([&bot, &apiToken, &songQueue](const dpp::slashcommand_t &event) {
         std::string user = event.command.usr.global_name;
         std::string command = event.command.get_command_name();
 
@@ -60,17 +60,18 @@ int main(int argc, char *argv[]) {
         }
         else if (command == "play") {
             bot.log(dpp::ll_debug, "/play called by " + event.command.usr.global_name + ".");
-            // save the music query and channel_id to pass around as needed
-            music_query = std::get<std::string>(event.get_parameter("query_or_link"));
-            channel_id = event.command.channel_id;
+            std::string music_query = std::get<std::string>(event.get_parameter("query_or_link"));
             std::variant filter_provided = event.get_parameter("filter");
+            std::string filter;
             if (filter_provided.index() > 0) {
                 std::string filter_key = std::get<std::string>(filter_provided);
                 filter = FILTERS.at(filter_key);
             } else {
-                filter = "None";
+                filter = "";
             }
-            play_process(bot, event, music_query, filter);
+
+            SongRequest newSong{music_query, filter, (dpp::slashcommand_t &) event};
+            play_process(bot, newSong, songQueue);
         }
         else if (command == "join") {
             bot.log(dpp::ll_debug, "/join called by " + event.command.usr.global_name + ".");
@@ -138,9 +139,16 @@ int main(int argc, char *argv[]) {
         }
     });
 
-    bot.on_voice_ready([&bot, &music_query, &channel_id, &filter](const dpp::voice_ready_t &event){
-        if (!music_query.empty()) {
-            stream_audio_secondary(bot, event, music_query, channel_id, filter);
+    bot.on_voice_ready([&bot, &songQueue](const dpp::voice_ready_t &event){
+        if (!songQueue.isEmpty()) {
+            stream_audio_to_discord(bot, songQueue.nextRequest());
+        }
+    });
+
+    bot.on_voice_track_marker([&bot, &songQueue](const dpp::voice_track_marker_t &event){
+        std::cout << "Voice Track Marker Event\n";
+        if (!songQueue.isEmpty()) {
+            stream_audio_to_discord(bot, songQueue.nextRequest());
         }
     });
 
