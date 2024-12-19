@@ -8,12 +8,12 @@
 struct SongRequest {
     std::string query;
     std::string filter;
-    dpp::slashcommand_t &event;
+    const dpp::slashcommand_t event;
 };
 
 class JadeQueue {
 public:
-    void addRequest(const std::string& query, const std::string& filter, dpp::slashcommand_t& event);
+    void addSong(const std::string& query, const std::string& filter, dpp::slashcommand_t event);
     void addSong(const SongRequest newSong);
     SongRequest nextRequest();
     [[nodiscard]] bool isEmpty() const;

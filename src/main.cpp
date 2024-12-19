@@ -23,10 +23,8 @@ int main(int argc, char *argv[]) {
 
     uint64_t intents = dpp::i_all_intents | dpp::i_message_content;
     dpp::cluster bot(argv[1], intents);
-
     const std::string& apiToken = argv[2];
     JadeQueue songQueue;
-
 
     bot.on_log(dpp::utility::cout_logger());
 
@@ -70,7 +68,7 @@ int main(int argc, char *argv[]) {
                 filter = "";
             }
 
-            SongRequest newSong{music_query, filter, (dpp::slashcommand_t &) event};
+            SongRequest newSong{music_query, filter, event};
             play_process(bot, newSong, songQueue);
         }
         else if (command == "join") {
@@ -91,7 +89,7 @@ int main(int argc, char *argv[]) {
         }
         else if (command == "skip") {
             bot.log(dpp::ll_debug, "/skip called by " + event.command.usr.global_name + ".");
-            skip_process(bot, event);
+            skip_process(bot, event, songQueue);
         }
         else if (command == "say") {
             bot.log(dpp::ll_debug, "/say called by " + event.command.usr.global_name + ".");
@@ -124,7 +122,7 @@ int main(int argc, char *argv[]) {
                 say_command(),
             });
         }
-        bot.set_presence(dpp::presence(dpp::ps_online, dpp::at_custom, "Locked, Loaded, and Ready to beat Cringe."));
+        bot.set_presence(dpp::presence(dpp::ps_online, dpp::at_custom, "Jade: The bot that turns 'Cringe' into history."));
     });
 
     bot.on_guild_member_update([&bot](const dpp::guild_member_update_t& event) {

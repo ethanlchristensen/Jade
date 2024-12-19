@@ -1,10 +1,10 @@
 #include <dpp/dpp.h>
 #include <fmt/format.h>
 #include "utils/voice/stream_audio.h"
+#include "utils/jade_embed.h"
 
 void stream_audio_to_discord(dpp::cluster &bot, SongRequest song)
 {
-    bot.log(dpp::ll_info, fmt::format("[stream_audio_to_discord]: Received a song to stream: {}, {}", song.query, song.filter));
     size_t bytes_read;
     std::byte buf[11520];
 
@@ -15,14 +15,19 @@ void stream_audio_to_discord(dpp::cluster &bot, SongRequest song)
     if (!song.filter.empty()) data += fmt::format(" -vn -filter_complex {} pipe:", song.filter);
     else data += " pipe:";
 
-    bot.log(dpp::ll_info, "Ready to stream song to Discord: " + data);
-    dpp::discord_voice_client *voice_client = song.event.from->get_voice(song.event.command.guild_id)->voiceclient;
-    std::cout << "We have the voice client!\n";
+    dpp::voiceconn *voice_conn = song.event.from->get_voice(song.event.command.guild_id);
+    dpp::discord_voice_client *voice_client = (voice_conn) ? voice_conn->voiceclient : nullptr;
+
+    if (voice_client == nullptr) {
+        bot.log(dpp::ll_error, "Voice client is null, cannot stream audio.");
+        return;
+    }
+
     if (voice_client && voice_client->is_ready())
     {
         bot.log(dpp::ll_debug, "[stream_audio_primary] -> now playing " + song.query);
-        dpp::message now_playing_message(song.event.command.channel_id, "Now playing: " + song.query,
-                                         dpp::mt_default);
+        auto embed = getNowPlayingEmbed(song.query, song.filter, song.event);
+        dpp::message now_playing_message(song.event.command.channel_id, embed);
         bot.message_create(now_playing_message);
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);
 
