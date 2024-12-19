@@ -43,6 +43,8 @@ add_executable(${PROJECT_NAME} src/main.cpp
         include/commands/voice/join_command.h
         src/commands/voice/leave_command.cpp
         include/commands/voice/leave_command.h
+        src/utils/jade_embed.cpp
+        include/utils/jade_embed.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

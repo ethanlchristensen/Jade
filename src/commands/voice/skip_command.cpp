@@ -8,7 +8,7 @@ dpp::slashcommand skip_command()
     return skip;
 }
 
-void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
+void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event, JadeQueue& queue)
 {
     dpp::voiceconn *v = event.from->get_voice(event.command.guild_id);
 
@@ -24,6 +24,9 @@ void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
         {
             dpp::message error_msg(event.command.channel_id, "There is no song to skip!", dpp::mt_default);
             event.reply(error_msg);
+        }
+        if (!queue.isEmpty()) {
+            stream_audio_to_discord(bot, queue.nextRequest());
         }
     }
     else

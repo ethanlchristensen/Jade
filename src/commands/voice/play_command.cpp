@@ -52,6 +52,7 @@ void play_process(dpp::cluster &bot, SongRequest song, JadeQueue &queue)
     {
         bot.log(dpp::ll_debug, "Jade not in VC, attempting to connect then stream.");
         song.event.edit_response("Processing your request!");
+        queue.addSong(song);
         song.event.from->connect_voice(guild->id, song.event.command.channel_id, false, true);
     }
 }
