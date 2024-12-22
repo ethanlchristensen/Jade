@@ -1,9 +1,6 @@
-#include <dpp/dpp.h>
-#include <fmt/format.h>
-#include "utils/voice/stream_audio.h"
-#include "utils/jade_embed.h"
+#include "utils\voice\stream_audio.h"
 
-void stream_audio_to_discord(dpp::cluster &bot, SongRequest song)
+void stream_audio_to_discord(dpp::cluster &bot, SongRequest song, SongInfo songInfo)
 {
     size_t bytes_read;
     std::byte buf[11520];
@@ -26,7 +23,7 @@ void stream_audio_to_discord(dpp::cluster &bot, SongRequest song)
     if (voice_client && voice_client->is_ready())
     {
         bot.log(dpp::ll_debug, "[stream_audio_primary] -> now playing " + song.query);
-        auto embed = getNowPlayingEmbed(song.query, song.filter, song.event);
+        dpp::embed embed = getNowPlayingEmbed(song, songInfo);
         dpp::message now_playing_message(song.event.command.channel_id, embed);
         bot.message_create(now_playing_message);
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);

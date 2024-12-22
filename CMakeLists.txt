@@ -7,7 +7,7 @@ message("cmake module path ${CMAKE_MODULE_PATH}")
 find_path(DPP_INCLUDE_DIR NAMES dpp/dpp.h HINTS ${DPP_ROOT_DIR})
 find_library(DPP_LIBRARIES NAMES dpp "libdpp.a" HINTS ${DPP_ROOT_DIR})
 find_library(MPG123_LIBRARY mpg123)
-
+find_path(CPPCODEC_INCLUDE_DIRS "cppcodec/base32_crockford.hpp")
 message(STATUS "MPG123 library: ${MPG123_LIBRARY}")
 
 include(FindPackageHandleStandardArgs)
@@ -24,8 +24,6 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/commands/nolan.cpp
         src/commands/clear.cpp
         src/commands/echo.cpp
-        src/commands/llmCommands.cpp
-        src/commands/say.cpp
         src/apis/helpers.cpp
         src/utils/jade_queue.cpp
         include/utils/jade_queue.h
@@ -45,6 +43,23 @@ add_executable(${PROJECT_NAME} src/main.cpp
         include/commands/voice/leave_command.h
         src/utils/jade_embed.cpp
         include/utils/jade_embed.h
+        src/utils/jade_slash.cpp
+        include/utils/jade_slash.h
+        src/commands/voice/play_test_command.cpp
+        include/commands/voice/play_test_command.h
+        src/utils/youtube/youtube_helpers.cpp
+        include/utils/youtube/youtube_helpers.h
+        src/utils/jade_util.cpp
+        include/utils/jade_util.h
+        src/commands/ollama/chat_command.cpp
+        include/commands/ollama/chat_command.h
+        src/utils/ollama/ollama.cpp
+        include/utils/ollama/ollama.h
+        include/utils/ollama/ollama.h
+        src/commands/ollama/describe_command.cpp
+        include/commands/ollama/describe_command.h
+        include/utils/env.h
+        src/utils/env.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -52,6 +67,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         ${DPP_INCLUDE_DIR}
         ${CURL_INCLUDE_DIR}
         ${MPG123_INCLUDE_DIR}
+        ${CPPCODEC_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
