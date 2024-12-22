@@ -1,97 +1,43 @@
 #pragma once
 #include <iostream>
 #include <dpp/dpp.h>
-#include "commands/commands.h"
 
+#include "utils/env.h"
+#include "utils/jade_slash.h"
+#include "utils/ollama/ollama.h"
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        std::cout << "ERROR: Usage: Bot Token and OpenAI API Token must be provided as command line arguments in "
-                     "the order '. . . <bot-token> <openai-api-token>'\n";
+
+    std::string botToken;
+
+    bool envLoaded = EnvLoader::loadEnvFile(".env");
+
+    if (envLoaded) {
+        botToken = EnvLoader::getEnvValue("DISCORD_BOT_TOKEN");
+    } else {
+        std::cerr << "WARNING: Failed to load .env file, attempting to grab bot token from command line args...\n";
+        if (argc != 2) {
+            std::cerr << "ERROR: Usage: Bot Token must be provided from a .env file or as command line argument: "
+                         "'Jade.exe <bot-token>'\n";
+            exit(1);
+        }
+        botToken = argv[1];
+    }
+
+    if (botToken.empty()) {
+        std::cerr << "Bot token was not read in correctly. Is there a value in the .env file?\n";
         exit(1);
     }
 
-    std::string music_query;
-    std::uint64_t channel_id;
-    std::string filter;
-
-    const std::string& apiToken = argv[2];
-
-    uint64_t intents = dpp::i_all_intents;
-
-    dpp::cluster bot(argv[1], intents);
+    uint64_t intents = dpp::i_all_intents | dpp::i_message_content;
+    dpp::cluster bot(botToken, intents);
+    JadeQueue songQueue;
+    OllamaAPI ollamaApi("http://localhost:11434");
 
     bot.on_log(dpp::utility::cout_logger());
 
-    bot.on_slashcommand([&bot, &apiToken, &music_query, &channel_id, &filter](const dpp::slashcommand_t& event) {
-
-        std::string user = event.command.usr.global_name;
-        std::string command = event.command.get_command_name();
-
-        if (command == "nolan") {
-            bot.log(dpp::ll_debug, "/nolan called by " + event.command.usr.global_name + ".");
-            nolan_process(bot, event);
-        }
-        else if (command == "clear") {
-            bot.log(dpp::ll_debug, "/clear called by " + event.command.usr.global_name + ".");
-            clear_process(bot, event);
-        }
-        else if (command == "echo") {
-            bot.log(dpp::ll_debug, "/echo called by " + event.command.usr.global_name + ".");
-            echo_process(bot, event);
-        }
-        else if (command == "chat") {
-            bot.log(dpp::ll_debug, "/chat called by " + event.command.usr.global_name + ".");
-            chat_process(bot, event, apiToken);
-        }
-        else if (command == "summarize") {
-            bot.log(dpp::ll_debug, "/summarize called by " + event.command.usr.global_name + ".");
-            summarize_process(bot, event, apiToken);
-        }
-        else if (command == "extract") {
-            bot.log(dpp::ll_debug, "/extract called by " + event.command.usr.global_name + ".");
-            extract_process(bot, event, apiToken);
-        }
-        else if (command == "play") {
-            bot.log(dpp::ll_debug, "/play called by " + event.command.usr.global_name + ".");
-            // save the music query and channel_id to pass around as needed
-            music_query = std::get<std::string>(event.get_parameter("query_or_link"));
-            channel_id = event.command.channel_id;
-            std::variant filter_provided = event.get_parameter("filter");
-            if (filter_provided.index() > 0) {
-                std::string filter_key = std::get<std::string>(filter_provided);
-                filter = FILTERS.at(filter_key);
-            } else {
-                filter = "None";
-            }
-            play_process(bot, event, music_query, filter);
-        }
-        else if (command == "join") {
-            bot.log(dpp::ll_debug, "/join called by " + event.command.usr.global_name + ".");
-            join_process(bot, event);
-        }
-        else if (command == "leave") {
-            bot.log(dpp::ll_debug, "/leave called by " + event.command.usr.global_name + ".");
-            leave_process(bot, event);
-        }
-        else if (command == "pause") {
-            bot.log(dpp::ll_debug, "/pause called by " + event.command.usr.global_name + ".");
-            pause_process(bot, event);
-        }
-        else if (command == "resume") {
-            bot.log(dpp::ll_debug, "/resume called by " + event.command.usr.global_name + ".");
-            resume_process(bot, event);
-        }
-        else if (command == "skip") {
-            bot.log(dpp::ll_debug, "/skip called by " + event.command.usr.global_name + ".");
-            skip_process(bot, event);
-        }
-        else if (command == "say") {
-            bot.log(dpp::ll_debug, "/say called by " + event.command.usr.global_name + ".");
-            if (user == "etchris") {
-                say_process(bot, event, apiToken);
-            }
-        }
+    bot.on_slashcommand([&bot, &songQueue, &ollamaApi](const dpp::slashcommand_t &event) {
+        processSlashCommand(bot, event, songQueue, ollamaApi);
     });
 
     bot.on_message_create([](const dpp::message_create_t& event) {
@@ -106,17 +52,17 @@ int main(int argc, char *argv[]) {
                 echo_command(),
                 nolan_command(),
                 chat_command(),
-                summarize_command(),
-                extract_command(),
+                describe_command(),
                 play_command(),
+                play_test_command(),
                 join_command(),
                 leave_command(),
                 pause_command(),
                 resume_command(),
                 skip_command(),
-                say_command(),
             });
         }
+        bot.set_presence(dpp::presence(dpp::ps_online, dpp::at_custom, "Jade: The bot that turns 'Cringe' into history."));
     });
 
     bot.on_guild_member_update([&bot](const dpp::guild_member_update_t& event) {
@@ -131,9 +77,18 @@ int main(int argc, char *argv[]) {
         }
     });
 
-    bot.on_voice_ready([&bot, &music_query, &channel_id, &filter](const dpp::voice_ready_t &event){
-        if (!music_query.empty()) {
-            stream_audio_secondary(bot, event, music_query, channel_id, filter);
+    bot.on_voice_ready([&bot, &songQueue](const dpp::voice_ready_t &event){
+        if (!songQueue.isEmpty()) {
+            QueueEntry nextRequest = songQueue.nextRequest();
+            stream_audio_to_discord(bot, nextRequest.request, nextRequest.info);
+        }
+    });
+
+    bot.on_voice_track_marker([&bot, &songQueue](const dpp::voice_track_marker_t &event){
+        std::cout << "Voice Track Marker Event\n";
+        if (!songQueue.isEmpty()) {
+            QueueEntry nextRequest = songQueue.nextRequest();
+            stream_audio_to_discord(bot, nextRequest.request, nextRequest.info);
         }
     });
 
