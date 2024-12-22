@@ -37,3 +37,4 @@ ignore.txt
 *.mp3
 audio/
 *.txt
+.env
