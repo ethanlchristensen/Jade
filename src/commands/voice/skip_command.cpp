@@ -26,7 +26,8 @@ void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event, JadeQueue
             event.reply(error_msg);
         }
         if (!queue.isEmpty()) {
-            stream_audio_to_discord(bot, queue.nextRequest());
+            QueueEntry nextRequest = queue.nextRequest();
+            stream_audio_to_discord(bot, nextRequest.request, nextRequest.info);
         }
     }
     else
