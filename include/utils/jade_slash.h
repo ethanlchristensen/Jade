@@ -14,8 +14,9 @@
 #include "commands/ollama/describe_command.h"
 
 #include "utils/voice/stream_audio.h"
-#include "utils/jade_queue.h"
 #include "utils/ollama/ollama.h"
+#include "utils/jade_queue.h"
+#include "utils/jade_embed.h"
 
 void processSlashCommand(dpp::cluster &bot, const dpp::slashcommand_t &event, JadeQueue &songQueue, OllamaAPI &ollamaApi);
 

@@ -34,10 +34,7 @@ void describe_process(dpp::cluster &bot, const dpp::slashcommand_t& event, Ollam
 
     std::string description = jsonResponse["message"]["content"];
 
-    dpp::embed embed = dpp::embed();
-    embed.set_title("Describe");
-    embed.set_image(att.url);
-    embed.add_field("Description", description);
+    dpp::embed embed = getDescriptionEmbed(event, description, att.url);
     dpp::message describe_message(event.command.channel_id, embed);
     event.edit_response(describe_message);
 }

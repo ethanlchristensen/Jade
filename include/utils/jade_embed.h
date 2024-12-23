@@ -6,7 +6,8 @@
 #include "utils/jade_queue.h"
 
 dpp::embed getNowPlayingEmbed(const SongRequest& song, const SongInfo& songInfo);
-dpp::embed addedToQueueEmbed(const std::string& query, const std::string& filter, const dpp::slashcommand_t& event);
-dpp::embed chatEmbed(const dpp::slashcommand_t& event, const std::string& model, const std::string& message, const std::string& response);
+dpp::embed getAddedToQueueEmbed(const SongRequest& song, const SongInfo& songInfo);
+dpp::embed getChatEmbed(const dpp::slashcommand_t& event, const std::string& model, const std::string& message, const std::string& response);
+dpp::embed getDescriptionEmbed(const dpp::slashcommand_t& event, const std::string& description, const std::string& imageUrl);
 
 #endif //JADE_JADE_EMBED_H

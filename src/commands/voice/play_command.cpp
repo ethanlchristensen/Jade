@@ -19,6 +19,7 @@ dpp::slashcommand play_command()
 void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::string& query,  std::string& filter, JadeQueue &queue)
 {
     event.thinking();
+
     if (!isValidURL(query)) {
         bot.log(dpp::ll_debug, fmt::format("Query was not a URL, searching youtube for a url: {}", query));
         query = getYoutubeUrl(query);
@@ -43,8 +44,10 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
     {
         if (channel->voiceclient->is_playing())
         {
-            std::cout << "Adding Song to the Queue\n";
-            song.event.edit_response("Adding your request to the queue!");
+            bot.log(dpp::ll_debug, "Bot is playing music, adding song to queue.");
+            dpp::embed embed = getAddedToQueueEmbed(song, songInfo);
+            dpp::message message(event.command.channel_id, embed);
+            song.event.edit_response(message);
             queue.addSong(song, songInfo);
         }
         else
