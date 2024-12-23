@@ -38,7 +38,7 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
             }
 
             std::string extracted_message = jsonResponse["message"]["content"];
-            dpp::embed embed = chatEmbed(event, model, message, extracted_message);
+            dpp::embed embed = getChatEmbed(event, model, message, extracted_message);
             dpp::message chat_message(event.command.channel_id, embed);
             event.edit_response(chat_message);
         } catch (const std::exception &e) {
