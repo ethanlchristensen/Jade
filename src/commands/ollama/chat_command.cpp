@@ -38,6 +38,13 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
             }
 
             std::string extracted_message = jsonResponse["message"]["content"];
+            std::string users = EnvLoader::getEnvValue("USERS_TO_ID");
+            auto jsonObject = nlohmann::json::parse(users);
+            for (auto& [key, value] : jsonObject.items()) {
+                if (value.is_string()) {
+                    extracted_message = std::regex_replace(extracted_message, std::regex(key), value.get<std::string>());
+                }
+            }
             dpp::embed embed = getChatEmbed(event, model, message, extracted_message);
             dpp::message chat_message(event.command.channel_id, embed);
             event.edit_response(chat_message);

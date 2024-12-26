@@ -14,7 +14,10 @@ void processSlashCommand(dpp::cluster &bot, const dpp::slashcommand_t &event, Ja
     }
     else if (command == "echo") {
         bot.log(dpp::ll_debug, "/echo called by " + event.command.usr.global_name + ".");
-        echo_process(bot, event);
+        if (event.command.usr.global_name == "nulzo" )
+            event.reply("no");
+        else
+            echo_process(bot, event);
     }
     else if (command == "play") {
         bot.log(dpp::ll_debug, "/play called by " + event.command.usr.global_name + ".");

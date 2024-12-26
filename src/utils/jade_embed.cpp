@@ -2,11 +2,12 @@
 
 dpp::embed getNowPlayingEmbed(const SongRequest& song, const SongInfo& songInfo) {
     dpp::embed embed = dpp::embed();
-    embed.set_thumbnail("https://i.imgur.com/VARKMtQ.png");
+    embed.set_thumbnail(songInfo.thumbnailUrl.empty() ? "https://i.imgur.com/VARKMtQ.png" : songInfo.thumbnailUrl);
     embed.set_color(0x0099ff);
     embed.set_title("Now Playing");
-    embed.add_field("Title", fmt::format("[{}]({})", songInfo.title, song.query), false);
-    embed.add_field("Artist", fmt::format("[{}]({})", songInfo.artist, songInfo.artistUrl), false);
+    embed.add_field("Title", song.query.empty() ? "Unknown" : fmt::format("[{}]({})", songInfo.title, song.query), false);
+    embed.add_field("Artist", songInfo.artistUrl.empty()? "Unknown" : fmt::format("[{}]({})", songInfo.artist, songInfo.artistUrl), false);
+    embed.add_field("Duration", secondsToHHMMSS(songInfo.duration), false);
     embed.add_field("Filter", song.filter.empty() ? "No Filter" : song.filter);
     embed.set_footer(dpp::embed_footer().set_text("/play by " + song.event.command.usr.global_name).set_icon(song.event.command.usr.get_avatar_url()));
     return embed;

@@ -4,6 +4,7 @@
 #include <dpp/dpp.h>
 #include <fmt/format.h>
 #include "utils/jade_queue.h"
+#include "utils/jade_util.h"
 
 dpp::embed getNowPlayingEmbed(const SongRequest& song, const SongInfo& songInfo);
 dpp::embed getAddedToQueueEmbed(const SongRequest& song, const SongInfo& songInfo);
