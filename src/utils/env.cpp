@@ -47,6 +47,6 @@ namespace EnvLoader {
         if (value == nullptr) {
             return "";
         }
-        return std::string(value);
+        return value;
     }
 }

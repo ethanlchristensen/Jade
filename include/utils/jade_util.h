@@ -5,13 +5,16 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <iomanip>
 #include <iostream>
 #include <curl/curl.h>
+#include <fmt/format.h>
 #include <cppcodec/base64_rfc4648.hpp>
 
 
 std::string executeCommand(const std::string& command);
 std::string encode_to_base64(const std::string& data);
+std::string secondsToHHMMSS(int total_seconds);
 
 class APIClient {
     public:
