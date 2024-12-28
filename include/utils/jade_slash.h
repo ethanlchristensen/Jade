@@ -18,6 +18,7 @@
 #include "utils/jade_queue.h"
 #include "utils/jade_embed.h"
 
+void loadSlashCommands(dpp::cluster &bot);
 void processSlashCommand(dpp::cluster &bot, const dpp::slashcommand_t &event, JadeQueue &songQueue, OllamaAPI &ollamaApi);
 
 #endif //JADE_JADE_SLASH_H

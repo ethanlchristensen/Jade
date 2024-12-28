@@ -12,7 +12,6 @@ dpp::slashcommand echo_command()
 
 void echo_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
 {
-    bot.log(dpp::ll_info, std::get<std::string>(event.get_parameter("message")));
     dpp::message msg(event.command.channel_id, std::get<std::string>(event.get_parameter("message")));
     event.thinking(true);
     event.edit_response("echo sent");

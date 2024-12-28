@@ -18,8 +18,8 @@ dpp::slashcommand play_command()
 
 void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::string& query,  std::string& filter, JadeQueue &queue)
 {
-    event.thinking();
-
+    event.thinking(true);
+    event.edit_response("Processing your request!");
     if (!isValidURL(query)) {
         bot.log(dpp::ll_debug, fmt::format("Query was not a URL, searching youtube for a url: {}", query));
         query = getYoutubeUrl(query);

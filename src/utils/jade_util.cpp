@@ -153,7 +153,7 @@ std::string secondsToHHMMSS(int total_seconds) {
         if (!result.empty()) result += ", ";
         result += fmt::format("{} Minute{}", minutes, minutes > 1 ? "s" : "");
     }
-    if (seconds > 0 || result.empty()) { // Include seconds if they're non-zero or if all other fields are zero
+    if (seconds > 0 || result.empty()) {
         if (!result.empty()) result += ", ";
         result += fmt::format("{} Second{}", seconds, seconds > 1 ? "s" : "");
     }
