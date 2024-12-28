@@ -45,32 +45,16 @@ int main(int argc, char *argv[]) {
     });
 
     bot.on_ready([&bot](const dpp::ready_t& event) {
-        if (dpp::run_once<struct register_bot_commands>()) {
-            bot.log(dpp::ll_debug, "creating slash commands.");
-            bot.global_bulk_command_create({
-                clear_command(),
-                echo_command(),
-                nolan_command(),
-                chat_command(),
-                describe_command(),
-                play_command(),
-                play_test_command(),
-                join_command(),
-                leave_command(),
-                pause_command(),
-                resume_command(),
-                skip_command(),
-            });
-        }
-        bot.set_presence(dpp::presence(dpp::ps_online, dpp::at_custom, "Jade: The bot that turns 'Cringe' into history."));
+        loadSlashCommands(bot);
+        bot.set_presence(dpp::presence(dpp::ps_online, dpp::at_custom, "Exploring infinite possibilities."));
     });
 
     bot.on_guild_member_update([&bot](const dpp::guild_member_update_t& event) {
         bot.log(dpp::ll_debug, "a user in the guild was updated.");
         if (event.updated.get_user()->global_name == "etchris") {
-            if (event.updated.get_nickname() != "Ethan") {
+            if (event.updated.get_nickname() != "etchris") {
                 auto target_user = bot.guild_get_member_sync(event.updating_guild->id, event.updated.get_user()->id);
-                target_user.set_nickname("Ethan");
+                target_user.set_nickname("etchris");
                 bot.guild_edit_member(target_user);
                 bot.log(dpp::ll_debug, "Reverted " + event.updated.get_user()->global_name + " name.");
             }

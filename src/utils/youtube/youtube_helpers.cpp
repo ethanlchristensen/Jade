@@ -54,26 +54,13 @@ SongInfo getSongInfo(const std::string& url) {
     }
     std::string command = "yt-dlp -J " + url;
     std::string jsonOutput = executeCommand(command);
-    std::cout << jsonOutput << "\n";
-    std::cout << "Trying to get information about the song!\n";
     try {
         nlohmann::json metadata = nlohmann::json::parse(jsonOutput);
-        std::cout << "Successfully parsed the json output!\n";
         std::string title = metadata.value("title", "Unknown");
-        std::cout << "Song: " << title << "\n";
-
         std::string artist = metadata.value("uploader", "Unknown");
-        std::cout << "Artist: " << artist << "\n";
-
         std::string artistUrl = metadata.value("uploader_url", "Unknown");
-        std::cout << "Artist Url: " << artistUrl << "\n";
-
         std::int32_t duration = (std::int32_t) metadata.value("duration", 0.0);
-        std::cout << "Duration: " << duration << "\n";
-
         std::string thumbnail = metadata.value("thumbnail", "Unknown");
-        std::cout << "Thumbnail: " << thumbnail << "\n";
-
         return SongInfo{url, title, artist, artistUrl, duration, thumbnail};
     } catch(...) {
         return SongInfo{url, "Unknown", "Unknown", "Unknown", 0, "Unknown"};
