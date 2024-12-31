@@ -12,6 +12,7 @@
 #include "commands/voice/skip_command.h"
 #include "commands/ollama/chat_command.h"
 #include "commands/ollama/describe_command.h"
+#include "commands/reply_command.h"
 
 #include "utils/voice/stream_audio.h"
 #include "utils/ollama/ollama.h"
