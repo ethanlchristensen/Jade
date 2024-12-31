@@ -1,19 +1,19 @@
 #include "commands/ollama/describe_command.h"
 
 dpp::slashcommand describe_command() {
-    dpp::slashcommand describe = dpp::slashcommand();
+    auto describe = dpp::slashcommand();
     describe.set_name("describe");
     describe.set_description("Use Jade to describe an image for you.");
     describe.add_option(dpp::command_option(dpp::co_attachment, "file", "Select an image", true));
     return describe;
 }
 
-void describe_process(dpp::cluster &bot, const dpp::slashcommand_t& event, OllamaAPI &ollamaApi) {
+void describe_process(const dpp::cluster &bot, const dpp::slashcommand_t& event, OllamaAPI &ollamaApi) {
     event.thinking();
-    dpp::snowflake file_id = std::get<dpp::snowflake>(event.get_parameter("file"));
+    const auto file_id = std::get<dpp::snowflake>(event.get_parameter("file"));
     dpp::attachment att = event.command.get_resolved_attachment(file_id);
     std::string image_base64 = encode_to_base64(APIClient::download_image(att.url));
-    OllamaAPI::ChatMessage message{"user", "Describe this image", {image_base64}};
+    const OllamaAPI::ChatMessage message{"user", "Describe this image", {image_base64}};
     std::string response = ollamaApi.sendMessage("Describe", message, false);
 
     auto jsonResponse = nlohmann::json::parse(response, nullptr, false);
@@ -32,9 +32,8 @@ void describe_process(dpp::cluster &bot, const dpp::slashcommand_t& event, Ollam
         return;
     }
 
-    std::string description = jsonResponse["message"]["content"];
-
-    dpp::embed embed = getDescriptionEmbed(event, description, att.url);
-    dpp::message describe_message(event.command.channel_id, embed);
+    const std::string description = jsonResponse["message"]["content"];
+    const dpp::embed embed = getDescriptionEmbed(event, description, att.url);
+    const dpp::message describe_message(event.command.channel_id, embed);
     event.edit_response(describe_message);
 }

@@ -17,6 +17,7 @@ void loadSlashCommands(dpp::cluster &bot) {
                pause_command(),
                resume_command(),
                skip_command(),
+            reply_command(),
        });
     }
 }
@@ -93,5 +94,9 @@ void processSlashCommand(dpp::cluster &bot, const dpp::slashcommand_t &event, Ja
     } else if (command == "describe") {
         bot.log(dpp::ll_debug, "/describe called by " + event.command.usr.global_name + ".");
         describe_process(bot, event, ollamaApi);
+    } else if (command == "reply")
+    {
+        bot.log(dpp::ll_debug, "/reply called by " + event.command.usr.global_name + ".");
+        reply_process(bot, event);
     }
 }

@@ -11,6 +11,6 @@
 #include "utils/jade_util.h"
 
 dpp::slashcommand describe_command();
-void describe_process(dpp::cluster &bot, const dpp::slashcommand_t& event, OllamaAPI &ollamaApi);
+void describe_process(const dpp::cluster &bot, const dpp::slashcommand_t& event, OllamaAPI &ollamaApi);
 
 #endif //JADE_DESCRIBE_COMMAND_H
