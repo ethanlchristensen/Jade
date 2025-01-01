@@ -14,12 +14,13 @@ dpp::slashcommand chat_command() {
 }
 
 void chat_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::string& message, std::string& model, OllamaAPI &ollamaApi) {
-    std::thread([&bot, event, message, model, &ollamaApi]() {
+    std::string formated_message = fmt::format("{} asks: {}", event.command.usr.global_name, message);
+    std::thread([&bot, event, message, model, &ollamaApi, formated_message]() {
         try {
             event.thinking(false);
             bot.log(dpp::ll_debug, fmt::format("Chat command called with {}, {}", message, model));
 
-            std::string response = ollamaApi.sendMessage(model, "user", message, false);
+            std::string response = ollamaApi.sendMessage(model, "user", formated_message, false);
 
             auto jsonResponse = nlohmann::json::parse(response, nullptr, false);
 

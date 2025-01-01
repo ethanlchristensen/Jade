@@ -16,6 +16,8 @@
 #include <opus/opus.h>
 #include <out123.h>
 
+#include "utils/jade_util.h"
+
 
 dpp::slashcommand nolan_command();
 

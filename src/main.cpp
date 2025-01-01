@@ -6,13 +6,11 @@
 #include "utils/jade_slash.h"
 #include "utils/ollama/ollama.h"
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
 
     std::string botToken;
 
-    bool envLoaded = EnvLoader::loadEnvFile(".env");
-
-    if (envLoaded) {
+    if (EnvLoader::loadEnvFile(".env")) {
         botToken = EnvLoader::getEnvValue("DISCORD_BOT_TOKEN");
     } else {
         std::cerr << "WARNING: Failed to load .env file, attempting to grab bot token from command line args...\n";
@@ -29,7 +27,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    uint64_t intents = dpp::i_all_intents | dpp::i_message_content;
+    constexpr uint64_t intents = dpp::i_all_intents | dpp::i_message_content;
     dpp::cluster bot(botToken, intents);
     JadeQueue songQueue;
     OllamaAPI ollamaApi("http://localhost:11434");
@@ -41,12 +39,14 @@ int main(int argc, char *argv[]) {
     });
 
     bot.on_message_create([](const dpp::message_create_t& event) {
+        if (event.msg.author.is_bot()) return;
         return;
     });
 
     bot.on_ready([&bot](const dpp::ready_t& event) {
         loadSlashCommands(bot);
-        bot.set_presence(dpp::presence(dpp::ps_online, dpp::at_custom, "Exploring infinite possibilities."));
+        const dpp::presence presence(dpp::ps_online, dpp::at_custom, "Exploring infinite possibilities.");
+        bot.set_presence(presence);
     });
 
     bot.on_guild_member_update([&bot](const dpp::guild_member_update_t& event) {
@@ -63,16 +63,16 @@ int main(int argc, char *argv[]) {
 
     bot.on_voice_ready([&bot, &songQueue](const dpp::voice_ready_t &event){
         if (!songQueue.isEmpty()) {
-            QueueEntry nextRequest = songQueue.nextRequest();
-            stream_audio_to_discord(bot, nextRequest.request, nextRequest.info);
+            auto [request, info] = songQueue.nextRequest();
+            stream_audio_to_discord(bot, request, info);
         }
     });
 
     bot.on_voice_track_marker([&bot, &songQueue](const dpp::voice_track_marker_t &event){
         std::cout << "Voice Track Marker Event\n";
         if (!songQueue.isEmpty()) {
-            QueueEntry nextRequest = songQueue.nextRequest();
-            stream_audio_to_discord(bot, nextRequest.request, nextRequest.info);
+            auto [request, info] = songQueue.nextRequest();
+            stream_audio_to_discord(bot, request, info);
         }
     });
 

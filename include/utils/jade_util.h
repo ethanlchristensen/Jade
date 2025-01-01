@@ -23,7 +23,7 @@ class APIClient {
 
         static std::string GET(const std::string &url, const std::string &authToken = "");
         static std::string POST(const std::string &url, const std::string &data, const std::string &authToken = "");
-        static std::string download_image(std::string &url);
+        static std::string download_image(const std::string &url);
 
     private:
         static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* out);

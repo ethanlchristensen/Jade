@@ -107,7 +107,7 @@ std::string APIClient::POST(const std::string &url, const std::string &data, con
     return response;
 }
 
-std::string APIClient::download_image(std::string &url) {
+std::string APIClient::download_image(const std::string &url) {
     CURL *curl = curl_easy_init();
     std::string imageData;
 
