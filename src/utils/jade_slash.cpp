@@ -88,8 +88,14 @@ void processSlashCommand(dpp::cluster &bot, const dpp::slashcommand_t &event, Ja
         skip_process(bot, event, songQueue);
     } else if (command == "chat") {
         bot.log(dpp::ll_debug, "/chat called by " + event.command.usr.global_name + ".");
-        std::string message = std::get<std::string>(event.get_parameter("message"));
-        std::string model = std::get<std::string>(event.get_parameter("model"));
+        auto message = std::get<std::string>(event.get_parameter("message"));
+        std::string model;
+        if (std::holds_alternative<std::string>(event.get_parameter("model"))) {
+            model = std::get<std::string>(event.get_parameter("model"));
+        } else {
+            model = "Jade";
+            bot.log(dpp::ll_debug, "No valid 'model' provided; defaulting to 'Jade'.");
+        }
         chat_process(bot, event, message, model, ollamaApi);
     } else if (command == "describe") {
         bot.log(dpp::ll_debug, "/describe called by " + event.command.usr.global_name + ".");
