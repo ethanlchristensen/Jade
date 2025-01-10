@@ -18,7 +18,7 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
     std::thread([&bot, event, message, model, &ollamaApi, formated_message]() {
         try {
             event.thinking(false);
-            bot.log(dpp::ll_debug, fmt::format("Chat command called with {}, {}", message, model));
+            bot.log(dpp::ll_info, fmt::format("Chat command called with {}, {}", message, model));
 
             std::string response = ollamaApi.sendMessage(model, "user", formated_message, false);
 
@@ -30,7 +30,7 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
                 return;
             }
 
-            bot.log(dpp::ll_debug, "JSON response from Ollama: " + jsonResponse.dump() + "\n");
+            bot.log(dpp::ll_info, "JSON response from Ollama: " + jsonResponse.dump() + "\n");
 
             if (!jsonResponse.contains("message") || !jsonResponse["message"].contains("content")) {
                 bot.log(dpp::ll_error, "Missing expected keys in JSON response");

@@ -21,7 +21,7 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
     event.thinking(true);
     event.edit_response("Processing your request!");
     if (!isValidURL(query)) {
-        bot.log(dpp::ll_debug, fmt::format("Query was not a URL, searching youtube for a url: {}", query));
+        bot.log(dpp::ll_info, fmt::format("Query was not a URL, searching youtube for a url: {}", query));
         query = getYoutubeUrl(query);
     }
 
@@ -44,7 +44,7 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
     {
         if (channel->voiceclient->is_playing())
         {
-            bot.log(dpp::ll_debug, "Bot is playing music, adding song to queue.");
+            bot.log(dpp::ll_info, "Bot is playing music, adding song to queue.");
             dpp::embed embed = getAddedToQueueEmbed(song, songInfo);
             dpp::message message(event.command.channel_id, embed);
             song.event.edit_response(message);
@@ -52,14 +52,14 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
         }
         else
         {
-            bot.log(dpp::ll_debug, "Jade in VC, streaming audio.");
+            bot.log(dpp::ll_info, "Jade in VC, streaming audio.");
             song.event.edit_response("Processing your request!");
             stream_audio_to_discord(bot, song, songInfo);
         }
     }
     else
     {
-        bot.log(dpp::ll_debug, "Jade not in VC, attempting to connect then stream.");
+        bot.log(dpp::ll_info, "Jade not in VC, attempting to connect then stream.");
         song.event.edit_response("Processing your request!");
         queue.addSong(song, songInfo);
         song.event.from->connect_voice(guild->id, song.event.command.channel_id, false, true);

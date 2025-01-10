@@ -50,13 +50,13 @@ int main(const int argc, char *argv[]) {
     });
 
     bot.on_guild_member_update([&bot](const dpp::guild_member_update_t& event) {
-        bot.log(dpp::ll_debug, "a user in the guild was updated.");
+        bot.log(dpp::ll_info, "a user in the guild was updated.");
         if (event.updated.get_user()->global_name == "etchris") {
             if (event.updated.get_nickname() != "etchris") {
                 auto target_user = bot.guild_get_member_sync(event.updating_guild->id, event.updated.get_user()->id);
                 target_user.set_nickname("etchris");
                 bot.guild_edit_member(target_user);
-                bot.log(dpp::ll_debug, "Reverted " + event.updated.get_user()->global_name + " name.");
+                bot.log(dpp::ll_info, "Reverted " + event.updated.get_user()->global_name + " name.");
             }
         }
     });

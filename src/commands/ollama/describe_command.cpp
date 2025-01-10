@@ -33,11 +33,11 @@ void describe_process(const dpp::cluster &bot, const dpp::slashcommand_t& event,
         return;
     }
 
-    bot.log(dpp::ll_debug, "Received a response from Ollama!");
+    bot.log(dpp::ll_info, "Received a response from Ollama!");
 
     if (!jsonResponse.contains("message") || !jsonResponse["message"].contains("content")) {
         bot.log(dpp::ll_error, "Missing expected keys in JSON response");
-        bot.log(dpp::ll_debug, response);
+        bot.log(dpp::ll_info, response);
         event.edit_response(dpp::message(event.command.channel_id, "Error: Malformed response content."));
         return;
     }

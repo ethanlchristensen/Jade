@@ -49,7 +49,7 @@ void reply_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
             bot.log(dpp::ll_error, "Failed to send reply: " + callback.get_error().message);
             event.edit_response("Failed to send reply: " + callback.get_error().message);
         } else {
-            bot.log(dpp::ll_debug, "Reply sent successfully!");
+            bot.log(dpp::ll_info, "Reply sent successfully!");
             event.edit_response("Reply sent successfully!");
         }
     });

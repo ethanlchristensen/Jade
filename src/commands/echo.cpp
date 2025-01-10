@@ -46,7 +46,7 @@ void echo_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
             bot.log(dpp::ll_error, "Failed to send echo: " + callback.get_error().message);
             event.edit_response("Failed to send echo: " + callback.get_error().message);
         } else {
-            bot.log(dpp::ll_debug, "Echo sent successfully!");
+            bot.log(dpp::ll_info, "Echo sent successfully!");
             event.edit_response("Echo sent successfully!");
         }
     });
