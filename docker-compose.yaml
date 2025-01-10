@@ -1,5 +1,6 @@
 services:
   jade:
+    restart: always
     build:
       context: .
     container_name: jade_container
