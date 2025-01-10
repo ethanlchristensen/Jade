@@ -51,8 +51,13 @@ RUN wget -O dpp.deb https://dl.dpp.dev/latest/linux-rpi-arm64 && \
     rm dpp.deb
 
 # Build the application
+RUN mkdir -p build && \
+    cd build && \
+    cmake .. && \
+    make
+
+# Set the working directory for the entrypoint
 WORKDIR /usr/src/app/build
-RUN cmake .. && make
 
 # Set the entry point for the container
 ENTRYPOINT ["./Jade"]
