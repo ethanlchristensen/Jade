@@ -23,7 +23,7 @@ int main(const int argc, char *argv[]) {
     }
 
     if (botToken.empty()) {
-        std::cerr << "Bot token was not read in correctly. Is there a value in the .env file?\n";
+        std::cerr << "Bot token was not read in correctly. Is there a value in the .env file for DISCORD_BOT_TOKEN?\n";
         exit(1);
     }
 
