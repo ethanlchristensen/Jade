@@ -28,10 +28,7 @@ namespace EnvLoader {
 #if defined(_WIN32) || defined(_WIN64)
                 _putenv_s(key.c_str(), value.c_str());
 #else
-                std::string env_var = key + "=" + value;
-                char* env_var_cstr = new char[env_var.size() + 1];
-                std::strcpy(env_var_cstr, env_var.c_str());
-                putenv(env_var_cstr);
+                setenv(key.c_str(), value.c_str(), 1);
 #endif
             }
         }
