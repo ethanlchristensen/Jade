@@ -1,32 +1,57 @@
 FROM debian:stable-slim
 
+# Set working directory
 WORKDIR /usr/src/app
 
+# Copy source files
 COPY ./src /usr/src/app/src
 COPY ./include /usr/src/app/include
-#COPY ./cmake /usr/src/app/cmake
 COPY CMakeLists.txt .
-COPY Dockerfile .
-
-WORKDIR /usr/src/app/build
-
 COPY .env .
 
-RUN apt-get update
-RUN apt-get install -y build-essential cmake git
-RUN git clone https://github.com/tplgy/cppcodec.git
-RUN cd cppcodec
-RUN mkdir build
-RUN cd build
-RUN cmake ..
-RUN sudo make install
+# Install required packages
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    wget \
+    libssl-dev \
+    gcc \
+    g++ \
+    zlib1g-dev \
+    libsodium-dev \
+    libopus-dev \
+    ffmpeg \
+    libspdlog-dev \
+    opus-tools \
+    libfmt-dev \
+    libavformat-dev \
+    libavcodec-dev \
+    libavutil-dev \
+    libavfilter-dev \
+    libcurl4-openssl-dev \
+    yt-dlp \
+    libmpg123-dev \
+    mpg123 \
+    libcodec2-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y wget libssl-dev gcc g++ zlib1g-dev libsodium-dev libopus-dev ffmpeg libspdlog-dev opus-tools libopus-dev libspdlog-dev libfmt-dev libssl-dev libavformat-dev libavcodec-dev libavutil-dev libavfilter-dev libcurl4-openssl-dev yt-dlp libmpg123-dev mpg123 libcodec2-dev
-RUN wget -O dpp.deb https://dl.dpp.dev/latest/linux-rpi-arm64
-RUN dpkg -i dpp.deb
+# Clone, build, and install cppcodec
+RUN git clone https://github.com/tplgy/cppcodec.git && \
+    cd cppcodec && \
+    mkdir build && cd build && \
+    cmake .. && \
+    make && make install && \
+    cd /usr/src/app && rm -rf cppcodec
 
-RUN cmake ..
-RUN make
+# Download and install DPP
+RUN wget -O dpp.deb https://dl.dpp.dev/latest/linux-rpi-arm64 && \
+    dpkg -i dpp.deb && \
+    rm dpp.deb
+
+# Build the application
+WORKDIR /usr/src/app/build
+RUN cmake .. && make
 
 # Set the entry point for the container
-ENTRYPOINT ["./Jade"]
+ENTRYPOINT ["/usr/src/app/build/Jade"]
