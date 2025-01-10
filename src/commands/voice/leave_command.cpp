@@ -17,10 +17,10 @@ void leave_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
     {
         if (v->voiceclient->is_playing())
         {
-            bot.log(dpp::ll_debug, "bot is playing audio, stopping audio.");
+            bot.log(dpp::ll_info, "bot is playing audio, stopping audio.");
             v->voiceclient->stop_audio();
         }
-        bot.log(dpp::ll_debug, "leaving voice channel.");
+        bot.log(dpp::ll_info, "leaving voice channel.");
         event.from->disconnect_voice(event.command.guild_id);
         event.reply("Peace out ✌");
     }

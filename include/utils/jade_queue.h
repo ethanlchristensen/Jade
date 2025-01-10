@@ -16,6 +16,8 @@ struct SongInfo {
     std::string title;
     std::string artist;
     std::string artistUrl;
+    std::int32_t duration;
+    std::string thumbnailUrl;
 };
 
 struct QueueEntry {

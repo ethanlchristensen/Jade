@@ -1,22 +1,71 @@
 FROM debian:stable-slim
 
+# Set working directory
 WORKDIR /usr/src/app
 
+# Copy source files
 COPY ./src /usr/src/app/src
 COPY ./include /usr/src/app/include
-COPY ./cmake /usr/src/app/cmake
 COPY CMakeLists.txt .
-COPY Dockerfile .
+COPY .env .
 
-WORKDIR /usr/src/app/build
+# Install required packages
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    wget \
+    libssl-dev \
+    gcc \
+    g++ \
+    zlib1g-dev \
+    libsodium-dev \
+    libopus-dev \
+    ffmpeg \
+    libspdlog-dev \
+    opus-tools \
+    libfmt-dev \
+    libavformat-dev \
+    libavcodec-dev \
+    libavutil-dev \
+    libavfilter-dev \
+    libcurl4-openssl-dev \
+    libmpg123-dev \
+    mpg123 \
+    libcodec2-dev \
+    nlohmann-json3-dev \
+    python3 \
+    python3-pip && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# COPY .env .
-RUN apt-get update && apt-get install -y wget libssl-dev gcc g++ cmake zlib1g-dev libsodium-dev libopus-dev ffmpeg libspdlog-dev opus-utils libopus-dev libspdlog-dev libfmt-dev libssl-dev libavformat-dev libavcodec-dev libavutil-dev libavfilter-dev libcurl4-openssl-dev yt-dlp libmpg123-dev mpg123
-RUN wget -O dpp.deb https://dl.dpp.dev/latest/linux-rpi-arm64
-RUN dpkg -i dpp.deb
+# Install yt-dlp via pip
+RUN python3 -m pip install --break-system-packages --no-cache-dir yt-dlp
 
-RUN cmake ..
-RUN make
+# Clone, build, and install cppcodec
+RUN git clone https://github.com/tplgy/cppcodec.git && \
+    cd cppcodec && \
+    mkdir build && cd build && \
+    cmake .. && \
+    make && make install && \
+    cd /usr/src/app && rm -rf cppcodec
+
+# Download and install DPP
+RUN wget -O dpp.deb https://dl.dpp.dev/latest/linux-rpi-arm64 && \
+    dpkg -i dpp.deb && \
+    rm dpp.deb
+
+# Build the application
+RUN mkdir -p build && \
+    cd build && \
+    cmake .. && \
+    make
+
+# Create a directory for the final executable
+RUN mkdir -p /app && \
+    cp /usr/src/app/build/Jade /app/
+
+# Set the working directory for the entrypoint
+WORKDIR /app
 
 # Set the entry point for the container
 ENTRYPOINT ["./Jade"]

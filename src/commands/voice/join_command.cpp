@@ -11,6 +11,10 @@ dpp::slashcommand join_command()
 void join_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
 {
     event.thinking(true);
+    if (event.command.usr.global_name == "nulzo") {
+        event.edit_response("Processing your request!");
+        return;
+    }
     event.edit_response("Processing your request!");
 
     dpp::guild *g = dpp::find_guild(event.command.guild_id);

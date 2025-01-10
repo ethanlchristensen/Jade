@@ -107,7 +107,7 @@ std::string APIClient::POST(const std::string &url, const std::string &data, con
     return response;
 }
 
-std::string APIClient::download_image(std::string &url) {
+std::string APIClient::download_image(const std::string &url) {
     CURL *curl = curl_easy_init();
     std::string imageData;
 
@@ -139,4 +139,24 @@ size_t APIClient::WriteCallbackToVector(void* contents, size_t size, size_t nmem
     return totalSize;
 }
 
+std::string secondsToHHMMSS(int total_seconds) {
+    int hours = total_seconds / 3600;
+    int minutes = (total_seconds % 3600) / 60;
+    int seconds = total_seconds % 60;
 
+    std::string result;
+
+    if (hours > 0) {
+        result += fmt::format("{} Hour{}", hours, hours > 1 ? "s" : "");
+    }
+    if (minutes > 0) {
+        if (!result.empty()) result += ", ";
+        result += fmt::format("{} Minute{}", minutes, minutes > 1 ? "s" : "");
+    }
+    if (seconds > 0 || result.empty()) {
+        if (!result.empty()) result += ", ";
+        result += fmt::format("{} Second{}", seconds, seconds > 1 ? "s" : "");
+    }
+
+    return result;
+}

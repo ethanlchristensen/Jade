@@ -3,8 +3,8 @@
 
 #include <regex>
 #include <iostream>
-#include "utils\jade_queue.h"
-#include "utils\jade_util.h"
+#include "utils/jade_queue.h"
+#include "utils/jade_util.h"
 
 bool isValidURL(const std::string& input);
 std::string getYoutubeUrl(const std::string& query);
