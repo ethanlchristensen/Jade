@@ -36,3 +36,5 @@ ignore.txt
 .vscode/
 *.mp3
 audio/
+*.txt
+.env
