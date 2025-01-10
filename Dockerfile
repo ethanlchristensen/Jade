@@ -35,9 +35,9 @@ RUN apt-get update && apt-get install -y \
     mpg123 \
     libcodec2-dev \
     nlohmann-json3-dev && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN yt-dlp -U
+rUN yt-dlp -U
 
 # Clone, build, and install cppcodec
 RUN git clone https://github.com/tplgy/cppcodec.git && \
