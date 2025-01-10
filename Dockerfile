@@ -55,4 +55,4 @@ WORKDIR /usr/src/app/build
 RUN cmake .. && make
 
 # Set the entry point for the container
-ENTRYPOINT ["/usr/src/app/build/Jade"]
+ENTRYPOINT ["./Jade"]
