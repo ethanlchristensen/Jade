@@ -30,7 +30,7 @@ int main(const int argc, char *argv[]) {
     constexpr uint64_t intents = dpp::i_all_intents | dpp::i_message_content;
     dpp::cluster bot(botToken, intents);
     JadeQueue songQueue;
-    OllamaAPI ollamaApi("http://localhost:11434");
+    OllamaAPI ollamaApi(EnvLoader::getEnvValue("OLLAMA_ENDPOINT"));
 
     bot.on_log(dpp::utility::cout_logger());
 
