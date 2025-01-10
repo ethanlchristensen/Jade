@@ -56,8 +56,12 @@ RUN mkdir -p build && \
     cmake .. && \
     make
 
+# Create a directory for the final executable
+RUN mkdir -p /app && \
+    cp /usr/src/app/build/Jade /app/
+
 # Set the working directory for the entrypoint
-WORKDIR /usr/src/app/build
+WORKDIR /app
 
 # Set the entry point for the container
 ENTRYPOINT ["./Jade"]

@@ -4,6 +4,6 @@ services:
       context: .
     container_name: jade_container
     volumes:
-      - .:/usr/src/app
-    working_dir: /usr/src/app/build
+      - ./.env:/app/.env
+    working_dir: /app
     entrypoint: ["./Jade"]
