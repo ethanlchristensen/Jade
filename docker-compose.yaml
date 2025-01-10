@@ -3,7 +3,7 @@ services:
     restart: always
     build:
       context: .
-    container_name: jade_container
+    container_name: jade
     volumes:
       - ./.env:/app/.env
     working_dir: /app
