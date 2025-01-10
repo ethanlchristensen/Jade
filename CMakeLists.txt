@@ -60,6 +60,8 @@ add_executable(${PROJECT_NAME} src/main.cpp
         include/commands/ollama/describe_command.h
         include/utils/env.h
         src/utils/env.cpp
+        src/commands/reply_command.cpp
+        include/commands/reply_command.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

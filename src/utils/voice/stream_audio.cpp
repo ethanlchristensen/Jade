@@ -1,4 +1,4 @@
-#include "utils\voice\stream_audio.h"
+#include "utils/voice/stream_audio.h"
 
 void stream_audio_to_discord(dpp::cluster &bot, SongRequest song, SongInfo songInfo)
 {
@@ -20,9 +20,9 @@ void stream_audio_to_discord(dpp::cluster &bot, SongRequest song, SongInfo songI
         return;
     }
 
-    if (voice_client && voice_client->is_ready())
+    if (voice_client->is_ready())
     {
-        bot.log(dpp::ll_debug, "[stream_audio_primary] -> now playing " + song.query);
+        bot.log(dpp::ll_info, "[stream_audio_primary] -> now playing " + song.query);
         dpp::embed embed = getNowPlayingEmbed(song, songInfo);
         dpp::message now_playing_message(song.event.command.channel_id, embed);
         bot.message_create(now_playing_message);
@@ -49,6 +49,6 @@ void stream_audio_to_discord(dpp::cluster &bot, SongRequest song, SongInfo songI
 #else
         pclose(pipe);
 #endif
-        bot.log(dpp::ll_debug, "[stream_audio_primary] -> all audio bytes send to discord.");
+        bot.log(dpp::ll_info, "[stream_audio_primary] -> all audio bytes send to discord.");
     }
 }

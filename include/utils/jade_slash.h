@@ -12,11 +12,14 @@
 #include "commands/voice/skip_command.h"
 #include "commands/ollama/chat_command.h"
 #include "commands/ollama/describe_command.h"
+#include "commands/reply_command.h"
 
 #include "utils/voice/stream_audio.h"
-#include "utils/jade_queue.h"
 #include "utils/ollama/ollama.h"
+#include "utils/jade_queue.h"
+#include "utils/jade_embed.h"
 
+void loadSlashCommands(dpp::cluster &bot);
 void processSlashCommand(dpp::cluster &bot, const dpp::slashcommand_t &event, JadeQueue &songQueue, OllamaAPI &ollamaApi);
 
 #endif //JADE_JADE_SLASH_H

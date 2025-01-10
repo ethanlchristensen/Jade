@@ -12,10 +12,7 @@
 #endif
 
 namespace EnvLoader {
-    // Function to load the .env file into the environment variables
     bool loadEnvFile(const std::string& filename);
-
-    // Function to get an environment variable's value by key
     std::string getEnvValue(const std::string& key);
 }
 

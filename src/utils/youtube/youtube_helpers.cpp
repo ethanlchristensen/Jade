@@ -57,14 +57,12 @@ SongInfo getSongInfo(const std::string& url) {
     try {
         nlohmann::json metadata = nlohmann::json::parse(jsonOutput);
         std::string title = metadata.value("title", "Unknown");
-        std::string artist = metadata.value("artist", "Unknown");
+        std::string artist = metadata.value("uploader", "Unknown");
         std::string artistUrl = metadata.value("uploader_url", "Unknown");
-        if (artist == "Unknown") {
-            artist = metadata.value("uploader", "Unknown");
-        }
-        std::cout << "Got a song with title '" + title + "' and artist '" + artist + "'!\n";
-        return SongInfo{url, title, artist, artistUrl};
+        std::int32_t duration = (std::int32_t) metadata.value("duration", 0.0);
+        std::string thumbnail = metadata.value("thumbnail", "Unknown");
+        return SongInfo{url, title, artist, artistUrl, duration, thumbnail};
     } catch(...) {
-        return SongInfo{url, "Unknown", "Unknown", "Unknown"};
+        return SongInfo{url, "Unknown", "Unknown", "Unknown", 0, "Unknown"};
     }
 }

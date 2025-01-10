@@ -1,1 +1,3 @@
 DISCORD_BOT_TOKEN=<token>
+USERS_TO_ID={"<string>": "<@<id>>"}
+OLLAMA_ENDPOINT=localhost:11434

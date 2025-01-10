@@ -1,5 +1,3 @@
-#include <utility>
-
 #include "utils/ollama/ollama.h"
 
 OllamaAPI::OllamaAPI(std::string  baseURL) : baseUrl(std::move(baseURL)) {
