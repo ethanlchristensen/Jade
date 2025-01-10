@@ -20,7 +20,7 @@ void stream_audio_to_discord(dpp::cluster &bot, SongRequest song, SongInfo songI
         return;
     }
 
-    if (voice_client && voice_client->is_ready())
+    if (voice_client->is_ready())
     {
         bot.log(dpp::ll_debug, "[stream_audio_primary] -> now playing " + song.query);
         dpp::embed embed = getNowPlayingEmbed(song, songInfo);

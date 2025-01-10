@@ -10,8 +10,17 @@ dpp::slashcommand describe_command() {
 
 void describe_process(const dpp::cluster &bot, const dpp::slashcommand_t& event, OllamaAPI &ollamaApi) {
     event.thinking();
+
     const auto file_id = std::get<dpp::snowflake>(event.get_parameter("file"));
     dpp::attachment att = event.command.get_resolved_attachment(file_id);
+
+    if (att.content_type != "image/jpeg" && att.content_type != "image/png" &&
+        att.content_type != "image/webp" && att.content_type != "image/avif") {
+        event.edit_response(dpp::message(event.command.channel_id, "Unsupported image format. Please upload a JPEG, PNG file."));
+        return;
+    }
+
+    bot.log(dpp::ll_info, "Received file: " + att.filename + " with MIME type: " + att.content_type + "\nURL: " + att.url);
     std::string image_base64 = encode_to_base64(APIClient::download_image(att.url));
     const OllamaAPI::ChatMessage message{"user", "Describe this image", {image_base64}};
     std::string response = ollamaApi.sendMessage("Describe", message, false);
@@ -28,6 +37,7 @@ void describe_process(const dpp::cluster &bot, const dpp::slashcommand_t& event,
 
     if (!jsonResponse.contains("message") || !jsonResponse["message"].contains("content")) {
         bot.log(dpp::ll_error, "Missing expected keys in JSON response");
+        bot.log(dpp::ll_debug, response);
         event.edit_response(dpp::message(event.command.channel_id, "Error: Malformed response content."));
         return;
     }

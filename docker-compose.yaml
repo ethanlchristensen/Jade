@@ -1,0 +1,8 @@
+services:
+  jade:
+    build:
+      context: .
+    container_name: jade_container
+    volumes:
+      - .:/usr/src/app
+    entrypoint: ./Jade
