@@ -43,3 +43,4 @@ A C++ Discord bot made using the D++ library.
    ```bash
    docker logs jade   
    ```
+   
