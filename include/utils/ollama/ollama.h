@@ -1,13 +1,14 @@
 #ifndef JADE_OLLAMA_H
 #define JADE_OLLAMA_H
 
+#include <utility>
 #include <string>
 #include <nlohmann/json.hpp>
 #include "utils/jade_util.h"
 
 class OllamaAPI {
 public:
-    explicit OllamaAPI(std::string  baseURL);
+    explicit OllamaAPI(std::string baseURL);
 
     struct ChatMessage {
         std::string role;
