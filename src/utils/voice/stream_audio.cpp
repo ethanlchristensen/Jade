@@ -1,4 +1,4 @@
-#include "utils\voice\stream_audio.h"
+#include "utils/voice/stream_audio.h"
 
 void stream_audio_to_discord(dpp::cluster &bot, SongRequest song, SongInfo songInfo)
 {
