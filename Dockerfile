@@ -30,14 +30,16 @@ RUN apt-get update && apt-get install -y \
     libavutil-dev \
     libavfilter-dev \
     libcurl4-openssl-dev \
-    yt-dlp \
     libmpg123-dev \
     mpg123 \
     libcodec2-dev \
-    nlohmann-json3-dev && \
+    nlohmann-json3-dev \
+    python3 \
+    python3-pip && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-rUN yt-dlp -U
+# Install yt-dlp via pip
+RUN python3 -m pip install --no-cache-dir yt-dlp
 
 # Clone, build, and install cppcodec
 RUN git clone https://github.com/tplgy/cppcodec.git && \
