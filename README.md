@@ -1,7 +1,7 @@
 A C++ Discord bot made using the D++ library.
 - _bruhshell (bs) dev (Ethan Christensen, etchris)_
 
-![bruhshelllogo](https://github.com/user-attachments/assets/1045f56f-ab7d-4f3f-ae78-5f66201c0242)
+![Jade](https://github.com/user-attachments/assets/1045f56f-ab7d-4f3f-ae78-5f66201c0242)
 
 ## Setup Instructions
 
@@ -43,4 +43,3 @@ A C++ Discord bot made using the D++ library.
    ```bash
    docker logs jade   
    ```
-   
