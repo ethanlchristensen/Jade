@@ -3,48 +3,50 @@
 std::vector<std::string> devMessages = {
         "Engines warming up... Dev in progress.",
         "Stars aligning. Dev mode active!",
-        "Jade’s coding an update!",
-        "Building Jade’s next mission!",
+        "Coding an update!",
+        "Building the next mission!",
         "Navigating dev space. Stay tuned!",
-        "Jade’s in dev mode. Prepare for lift-off!",
+        "In dev mode. Prepare for lift-off!",
         "Systems upgrading. Dev phase on!",
         "Cosmic code in the works!",
-        "Jade’s core systems in dev!",
+        "Core systems in dev!",
         "Dev mode engaged. Updates soon!",
         "Crafting the future in dev!",
         "Cosmic engine in beta. Hold tight!",
         "Exploring deep code. Stay tuned!",
-        "Jade’s in the lab, refining things.",
+        "In the lab, refining things.",
         "Countdown to release. Dev in progress!",
         "Coding at light speed!",
-        "Mission control: Jade in dev.",
-        "Jade’s future in the lab!",
+        "Mission control: In dev.",
+        "Future in the lab!",
         "Cosmic experiments in progress!",
-        "Jade’s in dev mode. Stay tuned!"
+        "In dev mode. Stay tuned!"
 };
 
+
 std::vector<std::string> prodMessages = {
-        "Jade is ready for launch!",
-        "Systems online. Jade is live!",
-        "Mission complete. Jade operational!",
-        "Engines powered. Jade at service!",
-        "Jade is live and ready!",
-        "All systems go. Jade’s live!",
-        "Jade’s mission active!",
-        "Ready for the stars. Jade’s in orbit!",
-        "Jade is operational!",
-        "Jade is in full swing!",
-        "Jade has entered the cosmos!",
-        "Mission success! Jade on standby.",
-        "Jade launched. Let’s go!",
-        "All systems functioning. Jade live!",
-        "Jade fully operational. Let’s go!",
-        "Jade at command. Ready for mission!",
-        "Jade’s online, exploring stars!",
-        "Lift-off complete. Jade’s live!",
-        "Code’s solid. Jade’s ready!",
-        "Jade operational and engaged!"
+        "Ready for launch!",
+        "Systems online. Live!",
+        "Mission complete. Operational!",
+        "Engines powered. At service!",
+        "Live and ready!",
+        "All systems go. Live!",
+        "Mission active!",
+        "Ready for the stars. In orbit!",
+        "Operational!",
+        "In full swing!",
+        "Entered the cosmos!",
+        "Mission success! On standby.",
+        "Launched. Let’s go!",
+        "All systems functioning. Live!",
+        "Fully operational. Let’s go!",
+        "At command. Ready for mission!",
+        "Online, exploring stars!",
+        "Lift-off complete. Live!",
+        "Code’s solid. Ready!",
+        "Operational and engaged!"
 };
+
 
 std::string executeCommand(const std::string& command) {
     std::array<char, 128> buffer{};
