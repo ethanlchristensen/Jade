@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 #include <random>
 #include <dpp/dpp.h>
@@ -43,12 +44,12 @@ int main(const int argc, char *argv[]) {
         processSlashCommand(bot, event, songQueue, ollamaApi);
     });
 
-    bot.on_message_create([](const dpp::message_create_t& event) {
+    bot.on_message_create([](const dpp::message_create_t &event) {
         if (event.msg.author.is_bot()) return;
         return;
     });
 
-    bot.on_ready([&bot, &environment, &gen](const dpp::ready_t& event) {
+    bot.on_ready([&bot, &environment, &gen](const dpp::ready_t &event) {
         loadSlashCommands(bot);
 
         std::string presence_message;
@@ -69,14 +70,17 @@ int main(const int argc, char *argv[]) {
         if (dpp::run_once<struct set_bot_nickname>()) {
             dpp::guild_member bot_member = bot.guild_get_member_sync(EnvLoader::getEnvValue("GUILD_ID"), bot.me.id);
             if (bot_member.get_nickname() != bot_username) {
-                bot.log(dpp::ll_info, fmt::format("Bot guild nickname is not correctly set, setting it to {}.", bot_username));
+                bot.log(dpp::ll_info,
+                        fmt::format("Bot guild nickname is not correctly set, setting it to {}.", bot_username));
                 bot.guild_current_member_edit(EnvLoader::getEnvValue("GUILD_ID"),
                                               bot_username,
                                               [&bot](const dpp::confirmation_callback_t &callback) {
                                                   if (callback.is_error()) {
-                                                      bot.log(dpp::ll_error, fmt::format("Failed to set the guild nickname: {}", callback.get_error().message));
+                                                      bot.log(dpp::ll_error,
+                                                              fmt::format("Failed to set the guild nickname: {}",
+                                                                          callback.get_error().message));
                                                   } else {
-                                                      bot.log(dpp::ll_error, "Successfully set the guild nickname!");
+                                                      bot.log(dpp::ll_info, "Successfully set the guild nickname!");
                                                   }
                                               });
             } else {
@@ -85,26 +89,42 @@ int main(const int argc, char *argv[]) {
         }
     });
 
-    bot.on_guild_member_update([&bot](const dpp::guild_member_update_t& event) {
+    bot.on_guild_member_update([&bot](const dpp::guild_member_update_t &event) {
         bot.log(dpp::ll_info, "a user in the guild was updated.");
         if (event.updated.get_user()->global_name == "etchris") {
             if (event.updated.get_nickname() != "etchris") {
-                auto target_user = bot.guild_get_member_sync(event.updating_guild->id, event.updated.get_user()->id);
-                target_user.set_nickname("etchris");
-                bot.guild_edit_member(target_user);
-                bot.log(dpp::ll_info, "Reverted " + event.updated.get_user()->global_name + " name.");
+                bot.guild_get_member(event.updating_guild->id,
+                                     event.updated.get_user()->id,
+                                     [&bot](const dpp::confirmation_callback_t &callback) {
+                                         if (callback.is_error()) {
+                                             bot.log(dpp::ll_error, fmt::format("Failed to get the guild user: {}",
+                                                                                callback.get_error().message));
+                                         } else {
+                                             const auto *target_user = std::get_if<dpp::guild_member>(&callback.value);
+                                             if (target_user) {
+                                                 dpp::guild_member edited_user = *target_user;
+                                                 edited_user.set_nickname("etchris");
+                                                 bot.guild_edit_member(edited_user);
+                                                 bot.log(dpp::ll_info,
+                                                         "Successfully updated the guild user's nickname!");
+                                             } else {
+                                                 bot.log(dpp::ll_error, "Received unexpected type in callback.value");
+                                             }
+                                         }
+                                     }
+                );
             }
         }
     });
 
-    bot.on_voice_ready([&bot, &songQueue](const dpp::voice_ready_t &event){
+    bot.on_voice_ready([&bot, &songQueue](const dpp::voice_ready_t &event) {
         if (!songQueue.isEmpty()) {
             auto [request, info] = songQueue.nextRequest();
             stream_audio_to_discord(bot, request, info);
         }
     });
 
-    bot.on_voice_track_marker([&bot, &songQueue](const dpp::voice_track_marker_t &event){
+    bot.on_voice_track_marker([&bot, &songQueue](const dpp::voice_track_marker_t &event) {
         std::cout << "Voice Track Marker Event\n";
         if (!songQueue.isEmpty()) {
             auto [request, info] = songQueue.nextRequest();
