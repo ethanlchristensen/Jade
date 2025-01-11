@@ -31,6 +31,7 @@ int main(const int argc, char *argv[]) {
     dpp::cluster bot(botToken, intents);
     JadeQueue songQueue;
     OllamaAPI ollamaApi(EnvLoader::getEnvValue("OLLAMA_ENDPOINT"));
+    auto environment = EnvLoader::getEnvValue("ENV");
 
     bot.on_log(dpp::utility::cout_logger());
 
@@ -43,9 +44,17 @@ int main(const int argc, char *argv[]) {
         return;
     });
 
-    bot.on_ready([&bot](const dpp::ready_t& event) {
+    bot.on_ready([&bot, &environment](const dpp::ready_t& event) {
         loadSlashCommands(bot);
-        const dpp::presence presence(dpp::ps_online, dpp::at_custom, "Exploring infinite possibilities.");
+
+        std::string presence_message;
+
+        if (environment == "dev") {
+            presence_message = "Engines warming up... Dev in progress.";
+        } else if (environment == "prod") {
+            presence_message = "Ready for the stars. Jade is in orbit!";
+        }
+        const dpp::presence presence(dpp::ps_online, dpp::at_custom, presence_message);
         bot.set_presence(presence);
 
         // Set the nickname, if needed, based on the current env (dev or prod)
