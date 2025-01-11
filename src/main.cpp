@@ -59,8 +59,6 @@ int main(const int argc, char *argv[]) {
             presence_message = devMessages[devDis(gen)];
             bot_username = "Jade (dev)";
         } else if (environment == "prod") {
-//            std::uniform_int_distribution<int> prodDis(0, static_cast<int>(prodMessages.size() - 1));
-//            presence_message "= prodMessages[prodDis(gen)];
             presence_message = "Ready for the stars. In orbit!";
             bot_username = "Jade";
         }
