@@ -48,17 +48,19 @@ int main(const int argc, char *argv[]) {
         loadSlashCommands(bot);
 
         std::string presence_message;
+        std::string bot_username;
 
         if (environment == "dev") {
             presence_message = "Engines warming up... Dev in progress.";
+            bot_username = "Jade (dev)";
         } else if (environment == "prod") {
             presence_message = "Ready for the stars. Jade is in orbit!";
+            bot_username = "Jade";
         }
+
         const dpp::presence presence(dpp::ps_online, dpp::at_custom, presence_message);
         bot.set_presence(presence);
 
-        // Set the nickname, if needed, based on the current env (dev or prod)
-        auto bot_username = fmt::format("Jade ({})", environment);
         if (dpp::run_once<struct set_bot_nickname>()) {
             dpp::guild_member bot_member = bot.guild_get_member_sync(EnvLoader::getEnvValue("GUILD_ID"), bot.me.id);
             if (bot_member.get_nickname() != bot_username) {
