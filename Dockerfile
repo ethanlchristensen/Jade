@@ -51,7 +51,6 @@ WORKDIR /usr/src/app
 
 # Copy source and configuration files
 COPY CMakeLists.txt .
-COPY .env .
 COPY ./src /usr/src/app/src
 COPY ./include /usr/src/app/include
 
