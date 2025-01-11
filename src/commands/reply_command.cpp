@@ -15,11 +15,11 @@ void reply_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
 {
     event.thinking(true);
 
-    if (event.command.usr.global_name == "nulzo")
-    {
-        event.edit_response("Failed to send reply!");
-        return;
-    }
+//    if (event.command.usr.global_name == "nulzo")
+//    {
+//        event.edit_response("Failed to send reply!");
+//        return;
+//    }
 
     const bool has_text = event.get_parameter("reply").index() != 0;
     const bool has_image = event.command.resolved.attachments.size() > 0;

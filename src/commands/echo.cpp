@@ -14,11 +14,11 @@ void echo_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
 {
     event.thinking(true);
 
-    if (event.command.usr.global_name == "nulzo")
-    {
-        event.edit_response("Failed to send echo!");
-        return;
-    }
+//    if (event.command.usr.global_name == "nulzo")
+//    {
+//        event.edit_response("Failed to send echo!");
+//        return;
+//    }
 
     const bool has_text = event.get_parameter("message").index() != 0;
     const bool has_image = !event.command.resolved.attachments.empty();
