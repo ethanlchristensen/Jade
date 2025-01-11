@@ -10,6 +10,7 @@ services:
     entrypoint: ["./Jade"]
 
   jade-prod:
+    tty: true
     restart: always
     build:
       context: .
