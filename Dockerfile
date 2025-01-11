@@ -39,7 +39,7 @@ RUN git clone https://github.com/tplgy/cppcodec.git && \
     mkdir build && cd build && \
     cmake .. && \
     make && make install && \
-    cd cd .. && rm -rf cppcodec
+    cd .. && rm -rf cppcodec
 
 # Download and install DPP
 RUN wget -O dpp.deb https://dl.dpp.dev/latest/linux-rpi-arm64 && \
