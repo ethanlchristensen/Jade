@@ -5,7 +5,7 @@ services:
       context: .
     container_name: jade-dev
     volumes:
-      - ./env/development.env:/app/.env
+      - ./development.env:/app/.env
     working_dir: /app
     entrypoint: ["./Jade"]
 
@@ -15,6 +15,6 @@ services:
       context: .
     container_name: jade-prod
     volumes:
-      - ./env/production.env:/app/.env
+      - ./production.env:/app/.env
     working_dir: /app
     entrypoint: ["./Jade"]
