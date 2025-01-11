@@ -1,12 +1,16 @@
 #pragma once
 #include <iostream>
+#include <random>
 #include <dpp/dpp.h>
 
 #include "utils/env.h"
+#include "utils/jade_util.h"
 #include "utils/jade_slash.h"
 #include "utils/ollama/ollama.h"
 
 int main(const int argc, char *argv[]) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
 
     std::string botToken;
 
@@ -44,17 +48,19 @@ int main(const int argc, char *argv[]) {
         return;
     });
 
-    bot.on_ready([&bot, &environment](const dpp::ready_t& event) {
+    bot.on_ready([&bot, &environment, &gen](const dpp::ready_t& event) {
         loadSlashCommands(bot);
 
         std::string presence_message;
         std::string bot_username;
 
         if (environment == "dev") {
-            presence_message = "Engines warming up... Dev in progress.";
+            std::uniform_int_distribution<int> devDis(0, static_cast<int>(devMessages.size() - 1));
+            presence_message = devMessages[devDis(gen)];
             bot_username = "Jade (dev)";
         } else if (environment == "prod") {
-            presence_message = "Ready for the stars. Jade is in orbit!";
+            std::uniform_int_distribution<int> prodDis(0, static_cast<int>(prodMessages.size() - 1));
+            presence_message = prodMessages[prodDis(gen)];
             bot_username = "Jade";
         }
 
