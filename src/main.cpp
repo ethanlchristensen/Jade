@@ -91,29 +91,27 @@ int main(const int argc, char *argv[]) {
 
     bot.on_guild_member_update([&bot](const dpp::guild_member_update_t &event) {
         bot.log(dpp::ll_info, "a user in the guild was updated.");
-        if (event.updated.get_user()->global_name == "etchris") {
-            if (event.updated.get_nickname() != "etchris") {
-                bot.guild_get_member(event.updating_guild->id,
-                                     event.updated.get_user()->id,
-                                     [&bot](const dpp::confirmation_callback_t &callback) {
-                                         if (callback.is_error()) {
-                                             bot.log(dpp::ll_error, fmt::format("Failed to get the guild user: {}",
-                                                                                callback.get_error().message));
+        if (event.updated.get_user()->global_name == "etchris" && event.updated.get_nickname() != "etchris") {
+            bot.guild_get_member(event.updating_guild->id,
+                                 event.updated.get_user()->id,
+                                 [&bot](const dpp::confirmation_callback_t &callback) {
+                                     if (callback.is_error()) {
+                                         bot.log(dpp::ll_error, fmt::format("Failed to get the guild user: {}",
+                                                                            callback.get_error().message));
+                                     } else {
+                                         const auto *target_user = std::get_if<dpp::guild_member>(&callback.value);
+                                         if (target_user) {
+                                             dpp::guild_member edited_user = *target_user;
+                                             edited_user.set_nickname("etchris");
+                                             bot.guild_edit_member(edited_user);
+                                             bot.log(dpp::ll_info,
+                                                     "Successfully updated the guild user's nickname!");
                                          } else {
-                                             const auto *target_user = std::get_if<dpp::guild_member>(&callback.value);
-                                             if (target_user) {
-                                                 dpp::guild_member edited_user = *target_user;
-                                                 edited_user.set_nickname("etchris");
-                                                 bot.guild_edit_member(edited_user);
-                                                 bot.log(dpp::ll_info,
-                                                         "Successfully updated the guild user's nickname!");
-                                             } else {
-                                                 bot.log(dpp::ll_error, "Received unexpected type in callback.value");
-                                             }
+                                             bot.log(dpp::ll_error, "Received unexpected type in callback.value");
                                          }
                                      }
-                );
-            }
+                                 }
+            );
         }
     });
 
