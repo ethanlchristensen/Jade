@@ -69,4 +69,3 @@ WORKDIR /app
 
 # Set the entry point for the container
 ENTRYPOINT ["./Jade"]
-CMD []
