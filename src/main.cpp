@@ -58,7 +58,7 @@ int main(const int argc, char *argv[]) {
         bot.set_presence(presence);
 
         // Set the nickname, if needed, based on the current env (dev or prod)
-        auto bot_username = fmt::format("Jade ({})", EnvLoader::getEnvValue("ENV"));
+        auto bot_username = fmt::format("Jade ({})", environment);
         if (dpp::run_once<struct set_bot_nickname>()) {
             dpp::guild_member bot_member = bot.guild_get_member_sync(EnvLoader::getEnvValue("GUILD_ID"), bot.me.id);
             if (bot_member.get_nickname() != bot_username) {
