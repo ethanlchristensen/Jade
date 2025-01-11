@@ -1,13 +1,5 @@
+# C:\Users\ethan\Desktop\Github\Jade\Dockerfile
 FROM debian:stable-slim
-
-# Set working directory
-WORKDIR /usr/src/app
-
-# Copy source files
-COPY ./src /usr/src/app/src
-COPY ./include /usr/src/app/include
-COPY CMakeLists.txt .
-COPY .env .
 
 # Install required packages
 RUN apt-get update && apt-get install -y \
@@ -53,6 +45,15 @@ RUN git clone https://github.com/tplgy/cppcodec.git && \
 RUN wget -O dpp.deb https://dl.dpp.dev/latest/linux-rpi-arm64 && \
     dpkg -i dpp.deb && \
     rm dpp.deb
+
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy source and configuration files
+COPY CMakeLists.txt .
+COPY .env .
+COPY ./src /usr/src/app/src
+COPY ./include /usr/src/app/include
 
 # Build the application
 RUN mkdir -p build && \
