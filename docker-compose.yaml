@@ -6,7 +6,6 @@ services:
     container_name: jade-dev
     volumes:
       - ./development.env:/app/.env
-      - ./build-cache-dev:/app/build  # Separate cache for development
     working_dir: /app
     entrypoint: ["./Jade"]
 
@@ -17,6 +16,5 @@ services:
     container_name: jade-prod
     volumes:
       - ./production.env:/app/.env
-      - ./build-cache-prod:/app/build  # Separate cache for production
     working_dir: /app
     entrypoint: ["./Jade"]

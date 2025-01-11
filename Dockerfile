@@ -54,13 +54,15 @@ COPY CMakeLists.txt .
 COPY ./src /usr/src/app/src
 COPY ./include /usr/src/app/include
 
-# Build the application using a mounted volume
-RUN mkdir -p /app/build && \
-    cmake -B /app/build -DCMAKE_BUILD_TYPE=Release && \
-    cmake --build /app/build
+# Build the application
+RUN mkdir -p build && \
+    cd build && \
+    cmake .. && \
+    make
 
-# Move the final executable to /app
-RUN cp /app/build/Jade /app/
+# Create a directory for the final executable
+RUN mkdir -p /app && \
+    cp /usr/src/app/build/Jade /app/
 
 # Set the working directory for the entrypoint
 WORKDIR /app
