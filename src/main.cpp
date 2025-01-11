@@ -47,6 +47,8 @@ int main(const int argc, char *argv[]) {
         loadSlashCommands(bot);
         const dpp::presence presence(dpp::ps_online, dpp::at_custom, "Exploring infinite possibilities.");
         bot.set_presence(presence);
+        auto environment = EnvLoader::getEnvValue("ENV");
+        bot.current_user_edit(fmt::format("Jade ({})"), environment);
     });
 
     bot.on_guild_member_update([&bot](const dpp::guild_member_update_t& event) {
