@@ -33,21 +33,21 @@ RUN apt-get update && apt-get install -y \
 # Install yt-dlp via pip
 RUN python3 -m pip install --break-system-packages --no-cache-dir yt-dlp
 
-# Set working directory
-WORKDIR /usr/src/app
-
 # Clone, build, and install cppcodec
 RUN git clone https://github.com/tplgy/cppcodec.git && \
     cd cppcodec && \
     mkdir build && cd build && \
     cmake .. && \
     make && make install && \
-    cd /usr/src/app && rm -rf cppcodec
+    cd cd .. && rm -rf cppcodec
 
 # Download and install DPP
 RUN wget -O dpp.deb https://dl.dpp.dev/latest/linux-rpi-arm64 && \
     dpkg -i dpp.deb && \
     rm dpp.deb
+
+# Set working directory
+WORKDIR /usr/src/app
 
 # Copy source and configuration files
 COPY CMakeLists.txt .

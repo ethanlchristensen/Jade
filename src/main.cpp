@@ -47,8 +47,26 @@ int main(const int argc, char *argv[]) {
         loadSlashCommands(bot);
         const dpp::presence presence(dpp::ps_online, dpp::at_custom, "Exploring infinite possibilities.");
         bot.set_presence(presence);
-        auto environment = EnvLoader::getEnvValue("ENV");
-        bot.current_user_edit(fmt::format("Jade ({})"), environment);
+
+        // Set the nickname, if needed, based on the current env (dev or prod)
+        auto bot_username = fmt::format("Jade ({})", EnvLoader::getEnvValue("ENV"));
+        if (dpp::run_once<struct set_bot_nickname>()) {
+            dpp::guild_member bot_member = bot.guild_get_member_sync(EnvLoader::getEnvValue("GUILD_ID"), bot.me.id);
+            if (bot_member.get_nickname() != bot_username) {
+                bot.log(dpp::ll_info, fmt::format("Bot guild nickname is not correctly set, setting it to {}.", bot_username));
+                bot.guild_current_member_edit(EnvLoader::getEnvValue("GUILD_ID"),
+                                              bot_username,
+                                              [&bot](const dpp::confirmation_callback_t &callback) {
+                                                  if (callback.is_error()) {
+                                                      bot.log(dpp::ll_error, fmt::format("Failed to set the guild nickname: {}", callback.get_error().message));
+                                                  } else {
+                                                      bot.log(dpp::ll_error, "Successfully set the guild nickname!");
+                                                  }
+                                              });
+            } else {
+                bot.log(dpp::ll_info, "Bot guild nickname is already correctly set.");
+            }
+        }
     });
 
     bot.on_guild_member_update([&bot](const dpp::guild_member_update_t& event) {
