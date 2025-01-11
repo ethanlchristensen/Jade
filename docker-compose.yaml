@@ -1,10 +1,20 @@
 services:
-  jade:
+  jade-dev:
     restart: always
     build:
       context: .
-    container_name: jade
+    container_name: jade-dev
     volumes:
-      - ./.env:/app/.env
+      - ./env/development.env:/app/.env
+    working_dir: /app
+    entrypoint: ["./Jade"]
+
+  jade-prod:
+    restart: always
+    build:
+      context: .
+    container_name: jade-prod
+    volumes:
+      - ./env/production.env:/app/.env
     working_dir: /app
     entrypoint: ["./Jade"]

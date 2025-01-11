@@ -38,3 +38,5 @@ ignore.txt
 audio/
 *.txt
 .env
+development.env
+production.env
