@@ -30,8 +30,6 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
                 return;
             }
 
-            bot.log(dpp::ll_info, "JSON response from Ollama: " + jsonResponse.dump() + "\n");
-
             if (!jsonResponse.contains("message") || !jsonResponse["message"].contains("content")) {
                 bot.log(dpp::ll_error, "Missing expected keys in JSON response");
                 event.edit_response(dpp::message(event.command.channel_id, "Error: Malformed response content."));

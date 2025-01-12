@@ -33,8 +33,6 @@ void describe_process(const dpp::cluster &bot, const dpp::slashcommand_t& event,
         return;
     }
 
-    bot.log(dpp::ll_info, "Received a response from Ollama!");
-
     if (!jsonResponse.contains("message") || !jsonResponse["message"].contains("content")) {
         bot.log(dpp::ll_error, "Missing expected keys in JSON response");
         bot.log(dpp::ll_info, response);
