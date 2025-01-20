@@ -31,7 +31,7 @@ RUN apt-get update && apt-get install -y \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install yt-dlp via pip
-RUN python3 -m pip install --break-system-packages --no-cache-dir yt-dlp==2024.8.6
+RUN python3 -m pip install --break-system-packages --no-cache-dir yt-dlp
 
 # Clone, build, and install cppcodec
 RUN git clone https://github.com/tplgy/cppcodec.git && \
