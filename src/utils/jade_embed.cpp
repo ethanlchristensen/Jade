@@ -39,6 +39,7 @@ dpp::embed getDescriptionEmbed(const dpp::slashcommand_t& event, const std::stri
     embed.set_title("Describe");
     embed.set_image(imageUrl);
 
+
     // field can only be 1024 characters
     size_t maxFieldLength = 1024;
     size_t pos = 0;
