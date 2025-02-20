@@ -42,7 +42,7 @@ RUN git clone https://github.com/tplgy/cppcodec.git && \
     cd .. && rm -rf cppcodec
 
 # Download and install DPP
-RUN wget -O dpp.deb https://dl.dpp.dev/latest/linux-rpi-arm64 && \
+RUN wget -O dpp.deb https://github.com/brainboxdotcc/DPP/releases/download/v10.0.29/libdpp-10.0.29-linux-rpi-arm64.deb && \
     dpkg -i dpp.deb && \
     rm dpp.deb
 
