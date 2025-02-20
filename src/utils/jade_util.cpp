@@ -1,5 +1,21 @@
 #include "utils/jade_util.h"
 
+#ifdef _WIN32
+inline FILE* platform_popen(const char* command, const char* mode) {
+    return _popen(command, mode);
+}
+inline int platform_pclose(FILE* stream) {
+    return _pclose(stream);
+}
+#else
+inline FILE* platform_popen(const char* command, const char* mode) {
+        return popen(command, mode);
+    }
+    inline int platform_pclose(FILE* stream) {
+        return pclose(stream);
+    }
+#endif
+
 std::vector<std::string> devMessages = {
         "Engines warming up... Dev in progress.",
         "Stars aligning. Dev mode active!",
@@ -51,11 +67,8 @@ std::vector<std::string> prodMessages = {
 std::string executeCommand(const std::string& command) {
     std::array<char, 128> buffer{};
     std::string result;
-#if defined(_WIN32) || defined(_WIN64)
-    FILE* pipe = _popen(command.c_str(), "r");
-#else
-    FILE* pipe = popen(command.c_str(), "r");
-#endif
+    FILE* pipe = platform_popen(command.c_str(), "r");
+
     if (!pipe) {
         throw std::runtime_error("failed to open the pipe!");
     }
@@ -65,18 +78,10 @@ std::string executeCommand(const std::string& command) {
             buffer.fill(0);  // Clear the buffer after each use
         }
     } catch (...) {
-#if defined(_WIN32) || defined(_WIN64)
-        _pclose(pipe);
-#else
-        pclose(pipe);
-#endif
+        platform_pclose(pipe);
         throw;
     }
-#if defined(_WIN32) || defined(_WIN64)
-    _pclose(pipe);
-#else
-    pclose(pipe);
-#endif
+    platform_pclose(pipe);
     std::string finalResult = std::move(result);  // Ensure complete move of data
     return finalResult;
 }

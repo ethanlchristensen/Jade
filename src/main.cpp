@@ -37,6 +37,7 @@ int main(const int argc, char *argv[]) {
     JadeQueue songQueue;
     OllamaAPI ollamaApi(EnvLoader::getEnvValue("OLLAMA_ENDPOINT"));
     auto environment = EnvLoader::getEnvValue("ENV");
+    auto removeReactionMappings = nlohmann::json::parse(EnvLoader::getEnvValue("REMOVE_REACTION_MAPPINGS"));
 
     bot.on_log(dpp::utility::cout_logger());
 
@@ -60,7 +61,8 @@ int main(const int argc, char *argv[]) {
             presence_message = devMessages[devDis(gen)];
             bot_username = "Jade (dev)";
         } else if (environment == "prod") {
-            presence_message = "Ready for the stars. In orbit!";
+            std::uniform_int_distribution<int> prodDis(0, static_cast<int>(prodMessages.size() - 1));
+            presence_message = prodMessages[prodDis(gen)];
             bot_username = "Jade";
         }
 
@@ -113,6 +115,37 @@ int main(const int argc, char *argv[]) {
                                  }
             );
         }
+    });
+
+    bot.on_message_reaction_add([&bot, &removeReactionMappings](const dpp::message_reaction_add_t& event) {
+        bot.message_get(event.message_id, event.channel_id, [&bot, event, removeReactionMappings](const dpp::confirmation_callback_t& callback) {
+            if (callback.is_error()) return;
+
+            const auto* msg = std::get_if<dpp::message>(&callback.value);
+            if (!msg) return;
+
+            for (auto& mapping : removeReactionMappings.items()) {
+                const std::string& messageAuthor = mapping.key();
+                const std::string& reactingUser = mapping.value();
+
+                if (msg->author.username == messageAuthor) {
+                    if (event.reacting_member.get_user()->global_name == reactingUser) {
+                        auto reaction = event.reacting_emoji.id != 0 ? fmt::format("{}:{}", event.reacting_emoji.name, event.reacting_emoji.id.str()) : event.reacting_emoji.name;
+                        bot.message_delete_reaction(event.message_id,
+                                                    event.channel_id,
+                                                    event.reacting_user.id,
+                                                    reaction,
+                                                    [&bot, reactingUser, messageAuthor](const dpp::confirmation_callback_t& completionCallback) {
+                                                        if (completionCallback.is_error()) {
+                                                            bot.log(dpp::ll_error, "Error removing reaction from message.");
+                                                        } else {
+                                                            bot.log(dpp::ll_info, fmt::format("Removed reaction by {} from {} message.", reactingUser, messageAuthor));
+                                                        }
+                                                    });
+                    }
+                }
+            }
+        });
     });
 
     bot.on_voice_ready([&bot, &songQueue](const dpp::voice_ready_t &event) {
