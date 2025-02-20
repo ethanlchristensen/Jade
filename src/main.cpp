@@ -9,37 +9,53 @@
 #include "utils/jade_slash.h"
 #include "utils/ollama/ollama.h"
 
+
+void validateEnvironmentVariables() {
+    std::vector<std::string> required_env_vars = {
+            "DISCORD_BOT_TOKEN",
+            "USERS_TO_ID",
+            "OLLAMA_ENDPOINT",
+            "ENV",
+            "GUILD_ID",
+            "REMOVE_REACTION_MAPPINGS"
+    };
+
+    for (const auto& var : required_env_vars) {
+        if (EnvLoader::getEnvValue(var).empty()) {
+            std::cerr << "ERROR: Required environment variable " << var << " is missing or empty.\n";
+            std::terminate();
+        }
+    }
+}
+
+
 int main(const int argc, char *argv[]) {
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    std::string botToken;
+    bool envLoaded = EnvLoader::loadEnvFile(".env");
 
-    if (EnvLoader::loadEnvFile(".env")) {
-        botToken = EnvLoader::getEnvValue("DISCORD_BOT_TOKEN");
-    } else {
-        std::cerr << "WARNING: Failed to load .env file, attempting to grab bot token from command line args...\n";
-        if (argc != 2) {
-            std::cerr << "ERROR: Usage: Bot Token must be provided from a .env file or as command line argument: "
-                         "'Jade.exe <bot-token>'\n";
-            exit(1);
-        }
-        botToken = argv[1];
+    if (envLoaded) {
+        validateEnvironmentVariables();
     }
+
+    auto botToken = EnvLoader::getEnvValue("DISCORD_BOT_TOKEN");
 
     if (botToken.empty()) {
         std::cerr << "Bot token was not read in correctly. Is there a value in the .env file for DISCORD_BOT_TOKEN?\n";
-        exit(1);
+        std::terminate();
     }
 
-    constexpr uint64_t intents = dpp::i_all_intents | dpp::i_message_content;
-    dpp::cluster bot(botToken, intents);
+    dpp::cluster bot(botToken, dpp::i_all_intents | dpp::i_message_content);
+
     JadeQueue songQueue;
     OllamaAPI ollamaApi(EnvLoader::getEnvValue("OLLAMA_ENDPOINT"));
     auto environment = EnvLoader::getEnvValue("ENV");
     auto removeReactionMappings = nlohmann::json::parse(EnvLoader::getEnvValue("REMOVE_REACTION_MAPPINGS"));
 
     bot.on_log(dpp::utility::cout_logger());
+
+    bot.log(dpp::ll_info, fmt::format("Loading Jade Discord Bot in environment {}", environment));
 
     bot.on_slashcommand([&bot, &songQueue, &ollamaApi](const dpp::slashcommand_t &event) {
         processSlashCommand(bot, event, songQueue, ollamaApi);
