@@ -1,5 +1,3 @@
-#pragma once
-
 #include <iostream>
 #include <random>
 #include <dpp/dpp.h>
@@ -67,10 +65,8 @@ int main(const int argc, char *argv[]) {
     });
 
     bot.on_ready([&bot, &environment, &gen](const dpp::ready_t &event) {
-        loadSlashCommands(bot);
-
-        std::string presence_message;
         std::string bot_username;
+        std::string presence_message;
 
         if (environment == "dev") {
             std::uniform_int_distribution<int> devDis(0, static_cast<int>(devMessages.size() - 1));
@@ -82,28 +78,31 @@ int main(const int argc, char *argv[]) {
             bot_username = "Jade";
         }
 
+        loadSlashCommands(bot);
         const dpp::presence presence(dpp::ps_online, dpp::at_custom, presence_message);
         bot.set_presence(presence);
 
         if (dpp::run_once<struct set_bot_nickname>()) {
-            dpp::guild_member bot_member = bot.guild_get_member_sync(EnvLoader::getEnvValue("GUILD_ID"), bot.me.id);
-            if (bot_member.get_nickname() != bot_username) {
-                bot.log(dpp::ll_info,
-                        fmt::format("Bot guild nickname is not correctly set, setting it to {}.", bot_username));
-                bot.guild_current_member_edit(EnvLoader::getEnvValue("GUILD_ID"),
-                                              bot_username,
-                                              [&bot](const dpp::confirmation_callback_t &callback) {
-                                                  if (callback.is_error()) {
-                                                      bot.log(dpp::ll_error,
-                                                              fmt::format("Failed to set the guild nickname: {}",
-                                                                          callback.get_error().message));
-                                                  } else {
-                                                      bot.log(dpp::ll_info, "Successfully set the guild nickname!");
-                                                  }
-                                              });
-            } else {
-                bot.log(dpp::ll_info, "Bot guild nickname is already correctly set.");
-            }
+            bot.guild_get_member(EnvLoader::getEnvValue("GUILD_ID"), bot.me.id, [&bot, bot_username](const dpp::confirmation_callback_t &callback) {
+                const auto* bot_member = std::get_if<dpp::guild_member>(&callback.value);
+                if (bot_member->get_nickname() != bot_username) {
+                    bot.log(dpp::ll_info,
+                            fmt::format("Bot guild nickname is not correctly set, setting it to {}.", bot_username));
+                    bot.guild_current_member_edit(EnvLoader::getEnvValue("GUILD_ID"),
+                                                  bot_username,
+                                                  [&bot](const dpp::confirmation_callback_t &callback) {
+                                                      if (callback.is_error()) {
+                                                          bot.log(dpp::ll_error,
+                                                                  fmt::format("Failed to set the guild nickname: {}",
+                                                                              callback.get_error().message));
+                                                      } else {
+                                                          bot.log(dpp::ll_info, "Successfully set the guild nickname!");
+                                                      }
+                                                  });
+                } else {
+                    bot.log(dpp::ll_info, "Bot guild nickname is already correctly set.");
+                }
+            });
         }
     });
 
