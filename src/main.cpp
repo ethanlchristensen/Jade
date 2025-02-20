@@ -109,7 +109,8 @@ int main(const int argc, char *argv[]) {
     bot.on_guild_member_update([&bot](const dpp::guild_member_update_t &event) {
         bot.log(dpp::ll_info, "a user in the guild was updated.");
         if (event.updated.get_user()->global_name == "etchris" && event.updated.get_nickname() != "etchris") {
-            bot.guild_get_member(event.updating_guild->id,
+            const dpp::guild* updating_guild = event.updating_guild;
+            bot.guild_get_member(updating_guild->id,
                                  event.updated.get_user()->id,
                                  [&bot](const dpp::confirmation_callback_t &callback) {
                                      if (callback.is_error()) {
