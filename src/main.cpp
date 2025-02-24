@@ -147,30 +147,31 @@ int main(const int argc, char *argv[]) {
 
                             for (auto &mapping: removeReactionMappings.items()) {
                                 const std::string &messageAuthor = mapping.key();
-                                const std::string &reactingUser = mapping.value();
+                                const std::vector<std::string>& reactingUsers = mapping.value().get<std::vector<std::string>>();
 
                                 if (msg->author.username == messageAuthor) {
-                                    if (event.reacting_member.get_user()->global_name == reactingUser) {
-                                        bot.log(dpp::ll_info, fmt::format("{} reacted to {}'s message, attempting to remove the reaction.", event.reacting_member.get_user()->global_name, msg->author.username));
-                                        auto reaction = event.reacting_emoji.id != 0 ? fmt::format("{}:{}",
-                                                                                                   event.reacting_emoji.name,
-                                                                                                   event.reacting_emoji.id.str())
-                                                                                     : event.reacting_emoji.name;
-                                        bot.message_delete_reaction(event.message_id,
-                                                                    event.channel_id,
-                                                                    event.reacting_user.id,
-                                                                    reaction,
-                                                                    [&bot, reactingUser, messageAuthor](
-                                                                            const dpp::confirmation_callback_t &completionCallback) {
-                                                                        if (completionCallback.is_error()) {
-                                                                            bot.log(dpp::ll_error,
-                                                                                    "Error removing reaction from message.");
-                                                                        } else {
-                                                                            bot.log(dpp::ll_info, fmt::format(
-                                                                                    "Removed reaction by {} from {} message.",
-                                                                                    reactingUser, messageAuthor));
-                                                                        }
-                                                                    });
+                                    for (const std::string &reactingUser: reactingUsers) {
+                                        if (event.reacting_member.get_user()->global_name == reactingUser) {
+                                            auto reaction = event.reacting_emoji.id != 0 ? fmt::format("{}:{}",
+                                                                                                       event.reacting_emoji.name,
+                                                                                                       event.reacting_emoji.id.str())
+                                                                                         : event.reacting_emoji.name;
+                                            bot.message_delete_reaction(event.message_id,
+                                                                        event.channel_id,
+                                                                        event.reacting_user.id,
+                                                                        reaction,
+                                                                        [&bot, reactingUser, messageAuthor](
+                                                                                const dpp::confirmation_callback_t &completionCallback) {
+                                                                            if (completionCallback.is_error()) {
+                                                                                bot.log(dpp::ll_error,
+                                                                                        "Error removing reaction from message.");
+                                                                            } else {
+                                                                                bot.log(dpp::ll_info, fmt::format(
+                                                                                        "Removed reaction by {} from {} message.",
+                                                                                        reactingUser, messageAuthor));
+                                                                            }
+                                                                        });
+                                        }
                                     }
                                 }
                             }
