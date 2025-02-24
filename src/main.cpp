@@ -151,6 +151,7 @@ int main(const int argc, char *argv[]) {
 
                                 if (msg->author.username == messageAuthor) {
                                     if (event.reacting_member.get_user()->global_name == reactingUser) {
+                                        bot.log(dpp::ll_info, fmt::format("{} reacted to {}'s message, attempting to remove the reaction.", event.reacting_member.get_user()->global_name, msg->author.username));
                                         auto reaction = event.reacting_emoji.id != 0 ? fmt::format("{}:{}",
                                                                                                    event.reacting_emoji.name,
                                                                                                    event.reacting_emoji.id.str())
