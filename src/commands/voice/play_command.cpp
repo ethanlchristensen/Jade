@@ -26,6 +26,12 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
     }
 
     SongInfo songInfo = getSongInfo(query);
+
+    if (songInfo.duration > 3600) {
+        event.edit_response(dpp::message(event.command.channel_id, "The song is longer than 60 minutes and cannot be added to the queue.", dpp::mt_default));
+        return;
+    }
+
     SongRequest song{query, filter, event};
 
     dpp::guild *guild = dpp::find_guild(song.event.command.guild_id);
