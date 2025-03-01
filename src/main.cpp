@@ -148,10 +148,11 @@ int main(const int argc, char *argv[]) {
                             for (auto &mapping: removeReactionMappings.items()) {
                                 const std::string &messageAuthor = mapping.key();
                                 const std::vector<std::string>& reactingUsers = mapping.value().get<std::vector<std::string>>();
-
-                                if (msg->author.username == messageAuthor) {
+                                const std::string reactorName = event.reacting_user.global_name;
+                                const std::string msgUserName = msg->author.global_name;
+                                if (msg->author.id.str()== messageAuthor) {
                                     for (const std::string &reactingUser: reactingUsers) {
-                                        if (event.reacting_member.get_user()->global_name == reactingUser) {
+                                        if (event.reacting_member.get_user()->id.str() == reactingUser) {
                                             auto reaction = event.reacting_emoji.id != 0 ? fmt::format("{}:{}",
                                                                                                        event.reacting_emoji.name,
                                                                                                        event.reacting_emoji.id.str())
@@ -160,7 +161,7 @@ int main(const int argc, char *argv[]) {
                                                                         event.channel_id,
                                                                         event.reacting_user.id,
                                                                         reaction,
-                                                                        [&bot, reactingUser, messageAuthor](
+                                                                        [&bot, reactorName, msgUserName](
                                                                                 const dpp::confirmation_callback_t &completionCallback) {
                                                                             if (completionCallback.is_error()) {
                                                                                 bot.log(dpp::ll_error,
@@ -168,7 +169,7 @@ int main(const int argc, char *argv[]) {
                                                                             } else {
                                                                                 bot.log(dpp::ll_info, fmt::format(
                                                                                         "Removed reaction by {} from {} message.",
-                                                                                        reactingUser, messageAuthor));
+                                                                                        reactorName, msgUserName));
                                                                             }
                                                                         });
                                         }

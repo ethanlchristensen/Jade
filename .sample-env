@@ -3,4 +3,4 @@ USERS_TO_ID={"<string>": "<@<id>>"}
 OLLAMA_ENDPOINT=localhost:11434
 ENV=dev
 GUILD_ID=<your server id>
-REMOVE_REACTION_MAPPINGS={"<author global name>": ["reactor_1_to_remove", "reactor_2_to_remove", ...]}
+REMOVE_REACTION_MAPPINGS={"author id": ["reactor 1 id", "reactor 2 id", ...]}
