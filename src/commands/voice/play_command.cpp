@@ -51,7 +51,7 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
         if (channel->voiceclient->is_playing())
         {
             bot.log(dpp::ll_info, "Bot is playing music, adding song to queue.");
-            dpp::embed embed = getAddedToQueueEmbed(song, songInfo);
+            dpp::embed embed = AddedToQueueEmbed(song, songInfo);
             dpp::message message(event.command.channel_id, embed);
             song.event.edit_response(message);
             queue.addSong(song, songInfo);

@@ -23,7 +23,7 @@ void stream_audio_to_discord(dpp::cluster &bot, SongRequest song, SongInfo songI
     if (voice_client->is_ready())
     {
         bot.log(dpp::ll_info, "[stream_audio_primary] -> now playing " + song.query);
-        dpp::embed embed = getNowPlayingEmbed(song, songInfo);
+        dpp::embed embed = NowPlayingEmbed(song, songInfo);
         dpp::message now_playing_message(song.event.command.channel_id, embed);
         bot.message_create(now_playing_message);
         voice_client->set_send_audio_type(dpp::discord_voice_client::satype_overlap_audio);

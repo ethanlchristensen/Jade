@@ -1,6 +1,6 @@
 #include "utils/jade_embed.h"
 
-dpp::embed getNowPlayingEmbed(const SongRequest& song, const SongInfo& songInfo) {
+dpp::embed NowPlayingEmbed(const SongRequest& song, const SongInfo& songInfo) {
     dpp::embed embed = dpp::embed();
     embed.set_thumbnail(songInfo.thumbnailUrl.empty() ? "https://i.imgur.com/VARKMtQ.png" : songInfo.thumbnailUrl);
     embed.set_color(0x0099ff);
@@ -13,7 +13,7 @@ dpp::embed getNowPlayingEmbed(const SongRequest& song, const SongInfo& songInfo)
     return embed;
 }
 
-dpp::embed getAddedToQueueEmbed(const SongRequest& song, const SongInfo& songInfo) {
+dpp::embed AddedToQueueEmbed(const SongRequest& song, const SongInfo& songInfo) {
     dpp::embed embed = dpp::embed();
     embed.set_thumbnail("https://i.imgur.com/VARKMtQ.png");
     embed.set_color(0x0099ff);
@@ -25,7 +25,7 @@ dpp::embed getAddedToQueueEmbed(const SongRequest& song, const SongInfo& songInf
     return embed;
 }
 
-dpp::embed getChatEmbed(const dpp::slashcommand_t& event, const std::string& model, const std::string& message, const std::string& response) {
+dpp::embed ChatEmbed(const dpp::slashcommand_t& event, const std::string& model, const std::string& message, const std::string& response) {
     dpp::embed embed = dpp::embed();
     embed.set_title("Chat Response");
     embed.add_field(event.command.usr.global_name, message);
@@ -34,7 +34,7 @@ dpp::embed getChatEmbed(const dpp::slashcommand_t& event, const std::string& mod
     return embed;
 }
 
-dpp::embed getDescriptionEmbed(const dpp::slashcommand_t& event, const std::string& description, const std::string& imageUrl) {
+dpp::embed DescriptionEmbed(const dpp::slashcommand_t& event, const std::string& description, const std::string& imageUrl) {
     dpp::embed embed = dpp::embed();
     embed.set_title("Describe");
     embed.set_image(imageUrl);

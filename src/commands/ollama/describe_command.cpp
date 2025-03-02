@@ -41,7 +41,7 @@ void describe_process(const dpp::cluster &bot, const dpp::slashcommand_t& event,
     }
 
     const std::string description = jsonResponse["message"]["content"];
-    const dpp::embed embed = getDescriptionEmbed(event, description, att.url);
+    const dpp::embed embed = DescriptionEmbed(event, description, att.url);
     const dpp::message describe_message(event.command.channel_id, embed);
     event.edit_response(describe_message);
 }

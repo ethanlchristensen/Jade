@@ -14,13 +14,13 @@ dpp::slashcommand chat_command() {
 }
 
 void chat_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::string& message, std::string& model, OllamaAPI &ollamaApi) {
-    std::string formated_message = fmt::format("{} asks: {}", event.command.usr.global_name, message);
-    std::thread([&bot, event, message, model, &ollamaApi, formated_message]() {
+    std::string formatted_message = fmt::format("{} asks: {}", event.command.usr.global_name, message);
+    std::thread([&bot, event, message, model, &ollamaApi, formatted_message]() {
         try {
             event.thinking(false);
             bot.log(dpp::ll_info, fmt::format("Chat command called with {}, {}", message, model));
 
-            std::string response = ollamaApi.sendMessage(model, "user", formated_message, false);
+            std::string response = ollamaApi.sendMessage(model, "user", formatted_message, false);
 
             auto jsonResponse = nlohmann::json::parse(response, nullptr, false);
 
@@ -44,7 +44,7 @@ void chat_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
                     extracted_message = std::regex_replace(extracted_message, std::regex(key), value.get<std::string>());
                 }
             }
-            const dpp::embed embed = getChatEmbed(event, model, message, extracted_message);
+            const dpp::embed embed = ChatEmbed(event, model, message, extracted_message);
             const dpp::message chat_message(event.command.channel_id, embed);
             event.edit_response(chat_message);
         } catch (const std::exception &e) {

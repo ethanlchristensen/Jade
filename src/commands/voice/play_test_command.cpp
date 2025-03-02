@@ -24,7 +24,7 @@ void play_test_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std:
     }
     SongInfo songInfo = getSongInfo(query);
     SongRequest song{query, filter, event};
-    dpp::embed embed = getNowPlayingEmbed(song, songInfo);
+    dpp::embed embed = NowPlayingEmbed(song, songInfo);
     dpp::message now_playing_message(event.command.channel_id, embed);
     event.edit_response(now_playing_message);
 }
