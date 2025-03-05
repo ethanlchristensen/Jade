@@ -4,3 +4,6 @@ OLLAMA_ENDPOINT=localhost:11434
 ENV=dev
 GUILD_ID=<your server id>
 REMOVE_REACTION_MAPPINGS={"author id": ["reactor 1 id", "reactor 2 id", ...]}
+NORMAL_CHAT_CHANNEL_IDS=[""]
+GEMINI_API_KEY=
+GEMINI_API_URL=https://generativelanguage.googleapis.com/

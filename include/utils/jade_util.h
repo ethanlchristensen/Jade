@@ -16,9 +16,11 @@ extern std::vector<std::string> prodMessages;
 
 std::string executeCommand(const std::string &command);
 
+std::string secondsToHHMMSS(int total_seconds);
+
 std::string encode_to_base64(const std::string &data);
 
-std::string secondsToHHMMSS(int total_seconds);
+std::string extractFirstFrameFromVideo(const std::string& videoUrl);
 
 class APIClient {
 public:
@@ -28,7 +30,7 @@ public:
 
     static std::string GET(const std::string &url, const std::string &authToken = "");
 
-    static std::string POST(const std::string &url, const std::string &data, const std::string &authToken = "");
+    static std::string POST(const std::string &url, const std::string &data, const std::string &authToken = "", const std::vector<std::string> &additionalHeaders = {});
 
     static std::string download_image(const std::string &url);
 

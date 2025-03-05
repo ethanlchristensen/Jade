@@ -1,3 +1,4 @@
+#include <fstream>
 #include "utils/jade_util.h"
 
 #ifdef _WIN32
@@ -86,11 +87,6 @@ std::string executeCommand(const std::string& command) {
     return finalResult;
 }
 
-std::string encode_to_base64(const std::string& data) {
-    std::string encoded = cppcodec::base64_rfc4648::encode(data);
-    return encoded;
-}
-
 APIClient::APIClient() {
     curl_global_init(CURL_GLOBAL_DEFAULT);
 }
@@ -129,20 +125,35 @@ std::string APIClient::GET(const std::string &url, const std::string &authToken)
     return response;
 }
 
-std::string APIClient::POST(const std::string &url, const std::string &data, const std::string &authToken) {
+std::string APIClient::POST(const std::string &url, const std::string &data, const std::string &authToken,
+                 const std::vector<std::string> &additionalHeaders) {
+    std::cout << "POST called!\n";
     CURL *curl = curl_easy_init();
     if (!curl) {
         return "Error initializing cURL";
     }
+
+    std::cout << "[POST] " + url + "\n";
 
     std::string response;
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
 
     struct curl_slist *headers = nullptr;
+
+    // Add auth token if provided
     if (!authToken.empty()) {
         std::string bearerToken = "Authorization: Bearer " + authToken;
         headers = curl_slist_append(headers, bearerToken.c_str());
+    }
+
+    // Add any additional headers
+    for (const auto &header : additionalHeaders) {
+        headers = curl_slist_append(headers, header.c_str());
+    }
+
+    // Set headers if any were added
+    if (headers) {
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     }
 
@@ -212,4 +223,62 @@ std::string secondsToHHMMSS(int total_seconds) {
     }
 
     return result;
+}
+
+std::string encode_to_base64(const std::string& data) {
+    std::string encoded = cppcodec::base64_rfc4648::encode(data);
+    return encoded;
+}
+
+std::string extractFirstFrameFromVideo(const std::string& videoUrl) {
+    // Create a temporary file for the video with a unique name in the current directory
+    std::string tempVideoPath = "temp_video_" + std::to_string(time(nullptr)) + ".mp4";
+    std::string tempFramePath = "temp_frame_" + std::to_string(time(nullptr)) + ".jpg";
+
+    try {
+        // Download the video
+        int downloadResult = std::system(("curl -s -o \"" + tempVideoPath + "\" \"" + videoUrl + "\"").c_str());
+        if (downloadResult != 0) {
+            throw std::runtime_error("Failed to download video file");
+        }
+
+        // Check if the file exists
+        std::ifstream videoFile(tempVideoPath);
+        if (!videoFile.good()) {
+            throw std::runtime_error("Video file was not created or is not accessible");
+        }
+        videoFile.close();
+
+        // Extract the first frame using FFmpeg
+        int ffmpegResult = std::system(("ffmpeg -i \"" + tempVideoPath + "\" -vframes 1 \"" + tempFramePath + "\" -y").c_str());
+        if (ffmpegResult != 0) {
+            throw std::runtime_error("FFmpeg failed to extract frame from video");
+        }
+
+        // Check if the frame file exists
+        std::ifstream frameFile(tempFramePath, std::ios::binary);
+        if (!frameFile.good()) {
+            throw std::runtime_error("Frame file was not created or is not accessible");
+        }
+
+        // Read the frame into a string
+        std::string image_data((std::istreambuf_iterator<char>(frameFile)), std::istreambuf_iterator<char>());
+        frameFile.close();
+
+        // Clean up temporary files
+        std::remove(tempVideoPath.c_str());
+        std::remove(tempFramePath.c_str());
+
+        return image_data;
+    } catch (const std::exception& e) {
+        // Log the error
+        std::cerr << "Error processing video: " << e.what() << std::endl;
+
+        // Clean up any temporary files that might have been created
+        std::remove(tempVideoPath.c_str());
+        std::remove(tempFramePath.c_str());
+
+        // Return an empty string to indicate failure
+        return "";
+    }
 }

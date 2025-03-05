@@ -20,11 +20,9 @@ find_library(FFMPEG_LIB avcodec avformat avutil avfilter)
 
 add_executable(${PROJECT_NAME} src/main.cpp
         include/commands/commands.h
-        include/apis/apis.h
         src/commands/nolan.cpp
         src/commands/clear.cpp
         src/commands/echo.cpp
-        src/apis/helpers.cpp
         src/utils/jade_queue.cpp
         include/utils/jade_queue.h
         src/commands/voice/play_command.cpp
@@ -62,6 +60,8 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/utils/env.cpp
         src/commands/reply_command.cpp
         include/commands/reply_command.h
+        include/utils/gemini/gemini.h
+        src/utils/gemini/gemini.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

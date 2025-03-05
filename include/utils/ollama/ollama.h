@@ -22,6 +22,8 @@ public:
     std::string sendMessage(const std::string& model, const ChatMessage& message,
                             bool stream = true);
 
+    std::string checkImage(const std::string& model, const std::string& imageData);
+
 private:
     std::string baseUrl;
     APIClient apiClient;
