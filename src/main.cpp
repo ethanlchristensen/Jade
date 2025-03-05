@@ -69,30 +69,118 @@ int main(const int argc, char *argv[]) {
     bot.on_message_create([&bot, &geminiApi](const dpp::message_create_t &event) {
         if (event.msg.author.is_bot()) return;
 
-        nlohmann::json channel_ids_json = nlohmann::json::parse(EnvLoader::getEnvValue("NORMAL_CHAT_CHANNEL_ID"));
-        bool check = false;
+        nlohmann::json channel_ids_json = nlohmann::json::parse(EnvLoader::getEnvValue("IMAGE_FILTER_CHANNELS"));
+        nlohmann::json users_to_check = nlohmann::json::parse(EnvLoader::getEnvValue("IMAGE_FILTER_USERS"));
+
+        bool channelCheck = false;
         for (const auto& channel_id : channel_ids_json) {
             if (channel_id == event.msg.channel_id.str()) {
-                check = true;
+                channelCheck = true;
                 break;
             }
         }
+        if (!channelCheck) return;
+
+        bool userCheck = false;
+        for (const auto& user_id : users_to_check) {
+            if (user_id == event.msg.author.id.str()) {
+                userCheck = true;
+                break;
+            }
+        }
+        if (!userCheck) return;
+
+        // Function to check content and take action if inappropriate
+        auto check_content = [&bot, &event, &geminiApi](const std::string& image_data) -> bool {
+            std::string result = geminiApi.checkImage("gemini-2.0-flash-lite", image_data);
+            std::string lower_result = result;
+            std::transform(lower_result.begin(), lower_result.end(), lower_result.begin(), ::tolower);
+            bot.log(dpp::ll_info, "Image/video check result: " + result);
+
+            if (lower_result.find("inappropriate") != std::string::npos) {
+                bot.log(dpp::ll_info, "Inappropriate content detected in normal chat, deleting the message.");
+                bot.message_delete(event.msg.id, event.msg.channel_id, [&bot, event](const dpp::confirmation_callback_t& callback) {
+                    if (callback.is_error()) {
+                        bot.log(dpp::ll_error, "Failed to delete inappropriate content: " + callback.get_error().message);
+                    } else {
+                        bot.log(dpp::ll_info, "Deleted inappropriate content from user " + std::to_string(event.msg.author.id) + " in channel " + std::to_string(event.msg.channel_id));
+                        dpp::guild* guild = dpp::find_guild(event.msg.guild_id);
+                        std::string guild_name = guild ? guild->name : "unknown server";
+                        dpp::message warning(event.msg.author.id, fmt::format("Your message in the server {} was removed because it contained inappropriate content. Please use a channel other than normal chat.", guild_name));
+                        bot.direct_message_create(event.msg.author.id, warning);
+                    }
+                });
+                return true;
+            }
+
+            bot.log(dpp::ll_info, "Content in the message was appropriate.");
+            return false;
+        };
+
+        // Helper function to check if a file extension is image or video
+        auto is_media_extension = [](const std::string& extension) -> bool {
+            return extension == "jpg" || extension == "jpeg" || extension == "png" ||
+                   extension == "gif" || extension == "mp4" || extension == "mov";
+        };
+
+        // Helper function to extract extension from URL
+        auto get_extension_from_url = [](const std::string& url) -> std::string {
+            size_t query_pos = url.find('?');
+            std::string path = query_pos != std::string::npos ? url.substr(0, query_pos) : url;
+            size_t dot_pos = path.find_last_of('.');
+            if (dot_pos != std::string::npos) {
+                std::string ext = path.substr(dot_pos + 1);
+                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                return ext;
+            }
+            return "";
+        };
+
+        // Check message content for Discord CDN links
+        std::string content = event.msg.content;
+        std::regex discord_cdn_regex(R"((https?://(?:cdn\.discordapp\.com|media\.discordapp\.net)/[^\s]+))");
+
+        std::smatch matches;
+        std::string::const_iterator search_start(content.cbegin());
+
+        bool inappropriate_found = false;
+
+        while (std::regex_search(search_start, content.cend(), matches, discord_cdn_regex) && !inappropriate_found) {
+            std::string url = matches[1].str();
+            bot.log(dpp::ll_debug, "Found Discord CDN URL: " + url);
+
+            std::string extension = get_extension_from_url(url);
+
+            if (is_media_extension(extension)) {
+                std::string image_data;
+                if (extension == "mp4" || extension == "mov") {
+                    bot.log(dpp::ll_info, "Video detected in URL, extracting first frame for moderation");
+                    image_data = extractFirstFrameFromVideo(url);
+                } else {
+                    image_data = APIClient::download_image(url);
+                }
+
+                inappropriate_found = check_content(image_data);
+                if (inappropriate_found) break;
+            }
+
+            search_start = matches[0].second;
+        }
+
+        // If we already found inappropriate content in URLs, skip checking attachments
+        if (inappropriate_found) return;
 
         // Check if the message contains attachments
-        if (check && !event.msg.attachments.empty()) {
+        if (!event.msg.attachments.empty()) {
             bot.log(dpp::ll_debug, "Target channel found and attachments in message found!");
-
             for (const auto& attachment : event.msg.attachments) {
                 // Check if it's an image or video
                 std::string filename = attachment.filename;
                 std::string extension = filename.substr(filename.find_last_of('.') + 1);
                 std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
-                if (extension == "jpg" || extension == "jpeg" || extension == "png" || extension == "gif" ||
-                    extension == "mp4" || extension == "mov") {
-
+                if (is_media_extension(extension)) {
                     std::string image_data;
-
                     if (extension == "mp4" || extension == "mov") {
                         bot.log(dpp::ll_info, "Video detected, extracting first frame for moderation");
                         image_data = extractFirstFrameFromVideo(attachment.url);
@@ -100,29 +188,7 @@ int main(const int argc, char *argv[]) {
                         image_data = APIClient::download_image(attachment.url);
                     }
 
-                    std::string result = geminiApi.checkImage("gemini-2.0-flash-lite", image_data);
-                    std::string lower_result = result;
-                    std::transform(lower_result.begin(), lower_result.end(), lower_result.begin(), ::tolower);
-
-                    bot.log(dpp::ll_info, "Image/video check result: " + result);
-
-                    if (lower_result.find("inappropriate") != std::string::npos) {
-                        bot.log(dpp::ll_info, "Inappropriate content detected in normal chat, deleting the message.");
-                        bot.message_delete(event.msg.id, event.msg.channel_id, [&bot, event](const dpp::confirmation_callback_t& callback) {
-                            if (callback.is_error()) {
-                                bot.log(dpp::ll_error, "Failed to delete inappropriate content: " + callback.get_error().message);
-                            } else {
-                                bot.log(dpp::ll_info, "Deleted inappropriate content from user " + std::to_string(event.msg.author.id) + " in channel " + std::to_string(event.msg.channel_id));
-                                dpp::guild* guild = dpp::find_guild(event.msg.guild_id);
-                                std::string guild_name = guild ? guild->name : "unknown server";
-                                dpp::message warning(event.msg.author.id, fmt::format("Your message in the server {} was removed because it contained inappropriate content. Please use a channel other than normal chat.", guild_name));
-                                bot.direct_message_create(event.msg.author.id, warning);
-                            }
-                        });
-                        break;
-                    } else {
-                        bot.log(dpp::ll_info, "Content in the message was appropriate.");
-                    }
+                    if (check_content(image_data)) break;
                 }
             }
         }
