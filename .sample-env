@@ -8,3 +8,4 @@ IMAGE_FILTER_CHANNELS=[""]
 IMAGE_FILTER_USERS=[""]
 GEMINI_API_KEY=
 GEMINI_API_URL=https://generativelanguage.googleapis.com/
+CLOWN_USER=
