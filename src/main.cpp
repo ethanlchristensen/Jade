@@ -136,6 +136,9 @@ bool checkAndModerateMediaContent(dpp::cluster& bot, const dpp::message_create_t
     return false;
 }
 
+std::map<dpp::snowflake, dpp::discord_client *> discord_clients;
+std::mutex discord_clients_m;
+
 int main(const int argc, char *argv[]) {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -272,6 +275,7 @@ int main(const int argc, char *argv[]) {
     });
 
     bot.on_voice_ready([&bot, &songQueue](const dpp::voice_ready_t &event) {
+        bot.log(dpp::ll_info, "Voice On Ready Event");
         if (!songQueue.isEmpty()) {
             auto [request, info] = songQueue.nextRequest();
             stream_audio_to_discord(bot, request, info);
@@ -279,7 +283,7 @@ int main(const int argc, char *argv[]) {
     });
 
     bot.on_voice_track_marker([&bot, &songQueue](const dpp::voice_track_marker_t &event) {
-        std::cout << "Voice Track Marker Event\n";
+        bot.log(dpp::ll_info, "Voice Track Marker Event");
         if (!songQueue.isEmpty()) {
             auto [request, info] = songQueue.nextRequest();
             stream_audio_to_discord(bot, request, info);
