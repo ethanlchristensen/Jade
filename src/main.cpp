@@ -174,6 +174,12 @@ int main(const int argc, char *argv[]) {
 
     bot.log(dpp::ll_info, fmt::format("Loading Jade Discord Bot in environment {}", environment));
 
+    bot.on_ready([&bot](const dpp::ready_t& event) {
+        loadSlashCommands(bot);
+        const dpp::presence presence(dpp::ps_online, dpp::at_custom, "Exploring infinite possibilities.");
+        bot.set_presence(presence);
+    });
+
     bot.on_slashcommand([&bot, &songQueue, &ollamaApi](const dpp::slashcommand_t &event) {
         processSlashCommand(bot, event, songQueue, ollamaApi);
     });
