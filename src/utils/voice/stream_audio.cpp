@@ -38,7 +38,6 @@ public:
 
 void stream_audio_to_discord(dpp::cluster &bot, SongRequest song, const SongInfo& songInfo)
 {
-<<<<<<< HEAD
     size_t bytes_read;
     std::byte buf[11520];
 
@@ -50,10 +49,7 @@ void stream_audio_to_discord(dpp::cluster &bot, SongRequest song, const SongInfo
     else data += " pipe:";
 
     dpp::voiceconn *voice_conn = song.event.from()->get_voice(song.event.command.guild_id);
-=======
-    // Get voice client
-    dpp::voiceconn *voice_conn = song.event.from->get_voice(song.event.command.guild_id);
->>>>>>> 486a1f2a5cfff4b09bb91728009f9ad4bf5a3015
+
     dpp::discord_voice_client *voice_client = (voice_conn) ? voice_conn->voiceclient : nullptr;
 
     if (voice_client == nullptr) {

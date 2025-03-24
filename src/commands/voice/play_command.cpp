@@ -36,7 +36,6 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
 
     dpp::guild *guild = dpp::find_guild(song.event.command.guild_id);
 
-<<<<<<< HEAD
     if (!guild->connect_member_voice(song.event.command.get_issuing_user().id))
     {
         const dpp::message error_msg(song.event.command.channel_id,
@@ -45,12 +44,9 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
         return;
     }
 
-    if (const dpp::voiceconn *channel = song.event.from()->get_voice(song.event.command.guild_id); channel && channel->voiceclient && channel->voiceclient->is_ready())
-=======
-    dpp::voiceconn *channel = song.event.from->get_voice(song.event.command.guild_id);
+    dpp::voiceconn *channel = song.event.from()->get_voice(song.event.command.guild_id);
 
     if (channel && channel->voiceclient && channel->voiceclient->is_ready())
->>>>>>> 486a1f2a5cfff4b09bb91728009f9ad4bf5a3015
     {
         if (channel->voiceclient->is_playing())
         {
@@ -72,9 +68,6 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
         bot.log(dpp::ll_info, "Jade not in VC, attempting to connect then stream.");
         song.event.edit_response("Processing your request!");
         queue.addSong(song, songInfo);
-<<<<<<< HEAD
-        song.event.from()->connect_voice(guild->id, song.event.command.channel_id, false, true);
-=======
         bool connected = guild->connect_member_voice(song.event.command.get_issuing_user().id, false, true);
         if (!connected)
         {
@@ -84,6 +77,5 @@ void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::stri
             song.event.edit_response(error_msg);
             return;
         }
->>>>>>> 486a1f2a5cfff4b09bb91728009f9ad4bf5a3015
     }
 }

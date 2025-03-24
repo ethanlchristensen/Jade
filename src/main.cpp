@@ -16,9 +16,7 @@ std::mutex cache_mutex;
 
 // Function to add message to cache if it is from the specified user
 void cache_protect_user_message(const dpp::message& msg, const std::string& protect_user_id) {
-    std::cout << fmt::format("Checking auth: {} and protect: {}\n", msg.author.id.str(), protect_user_id);
     if (msg.author.id.str() == protect_user_id) {
-        std::cout << "Adding message to protection cache!\n";
         std::lock_guard<std::mutex> lock(cache_mutex);
         protect_user_message_cache[msg.id] = msg;
     }
@@ -31,9 +29,6 @@ bool get_cached_protect_user_message(dpp::snowflake id, dpp::message& msg) {
     if (it != protect_user_message_cache.end()) {
         msg = it->second;
         return true;
-    } else
-    {
-        std::cout << fmt::format("Message with id {} not found in the cache.\n", id);
     }
     return false;
 }
@@ -203,15 +198,11 @@ int main(const int argc, char *argv[]) {
     );
     auto environment = EnvLoader::getEnvValue("ENV");
     auto removeReactionMappings = nlohmann::json::parse(EnvLoader::getEnvValue("REMOVE_REACTION_MAPPINGS"));
-<<<<<<< HEAD
     auto protectUserMessagesId = EnvLoader::getEnvValue("PROTECT_USER_MESSAGES_ID");
     int protectUserMessages = std::stoi(EnvLoader::getEnvValue("PROTECT_USER_MESSAGES"));
-
-=======
     nlohmann::json channel_ids_json = nlohmann::json::parse(EnvLoader::getEnvValue("IMAGE_FILTER_CHANNELS"));
     nlohmann::json users_to_check = nlohmann::json::parse(EnvLoader::getEnvValue("IMAGE_FILTER_USERS"));
     std::string clownUserId = EnvLoader::getEnvValue("CLOWN_USER");
->>>>>>> 486a1f2a5cfff4b09bb91728009f9ad4bf5a3015
 
     bot.on_log(dpp::utility::cout_logger());
 
@@ -227,23 +218,15 @@ int main(const int argc, char *argv[]) {
         processSlashCommand(bot, event, songQueue, ollamaApi);
     });
 
-<<<<<<< HEAD
-    bot.on_message_create([&bot, &geminiApi, &protectUserMessagesId, protectUserMessages](const dpp::message_create_t &event) {
+    bot.on_message_create([&bot, &geminiApi, &protectUserMessagesId, protectUserMessages, channel_ids_json, users_to_check, clownUserId](const dpp::message_create_t &event) {
         if (event.msg.author.is_bot()) return;
 
         if (protectUserMessages)
             cache_protect_user_message(event.msg, protectUserMessagesId);
 
-        nlohmann::json channel_ids_json = nlohmann::json::parse(EnvLoader::getEnvValue("IMAGE_FILTER_CHANNELS"));
-        nlohmann::json users_to_check = nlohmann::json::parse(EnvLoader::getEnvValue("IMAGE_FILTER_USERS"));
-=======
-    bot.on_message_create([&bot, &geminiApi, channel_ids_json, users_to_check, &clownUserId](const dpp::message_create_t &event) {
-        if (event.msg.author.is_bot()) return;
-
         if (event.msg.author.id.str() == clownUserId) {
             bot.message_add_reaction(event.msg.id, event.msg.channel_id, "🤡");
         }
->>>>>>> 486a1f2a5cfff4b09bb91728009f9ad4bf5a3015
 
         bool channelCheck = false;
         for (const auto& channel_id : channel_ids_json) {
@@ -373,7 +356,6 @@ int main(const int argc, char *argv[]) {
                 } else {
                     bot.log(dpp::ll_info, "Successfully resent the message.");
                     auto sent_message = std::get<dpp::message>(send_callback.value);
-                    bot.log(dpp::ll_debug, fmt::format("adding {} to cache.", sent_message.id));
                     cache_protect_user_message(sent_message, sent_message.author.id.str());
                 }
             });
