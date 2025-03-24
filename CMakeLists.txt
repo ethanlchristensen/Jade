@@ -7,8 +7,22 @@ message("cmake module path ${CMAKE_MODULE_PATH}")
 find_path(DPP_INCLUDE_DIR NAMES dpp/dpp.h HINTS ${DPP_ROOT_DIR})
 find_library(DPP_LIBRARIES NAMES dpp "libdpp.a" HINTS ${DPP_ROOT_DIR})
 find_library(MPG123_LIBRARY mpg123)
-find_path(CPPCODEC_INCLUDE_DIRS "cppcodec/base32_crockford.hpp")
+
+# Detect OS and include the appropriate library
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    find_path(CPPCODEC_INCLUDE_DIRS "cppcodec/base32_crockford.hpp")
+    message(STATUS "Using cppcodec for Windows")
+else()
+    # Unix-like system
+    find_library(LIBB64_LIBRARY NAMES b64) # Find libb64
+    find_path(LIBB64_INCLUDE_DIR NAMES b64/cencode.h b64/cdecode.h) # Find include path
+    message(STATUS "LIBB64 library: ${LIBB64_LIBRARY}")
+    message(STATUS "LIBB64 include dir: ${LIBB64_INCLUDE_DIR}")
+endif()
+
 message(STATUS "MPG123 library: ${MPG123_LIBRARY}")
+message(STATUS "DPP include dir: ${DPP_INCLUDE_DIR}")
+message(STATUS "DPP library: ${DPP_LIBRARIES}")
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(DPP DEFAULT_MSG DPP_LIBRARIES DPP_INCLUDE_DIR)
@@ -69,8 +83,21 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         ${DPP_INCLUDE_DIR}
         ${CURL_INCLUDE_DIR}
         ${MPG123_INCLUDE_DIR}
-        ${CPPCODEC_INCLUDE_DIRS}
 )
+
+# Include the correct directories based on the OS
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    target_include_directories(${PROJECT_NAME} PUBLIC ${CPPCODEC_INCLUDE_DIRS})
+else()
+    target_include_directories(${PROJECT_NAME} PUBLIC ${LIBB64_INCLUDE_DIR})
+endif()
+
+# Link libraries based on OS
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    # Additional linking for Windows if needed
+else()
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBB64_LIBRARY})
+endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
         ${CMAKE_THREAD_LIBS_INIT}

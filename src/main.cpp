@@ -1,5 +1,7 @@
 #include <iostream>
 #include <random>
+#include <unordered_map>
+#include <mutex>
 #include <dpp/dpp.h>
 
 #include "utils/env.h"
@@ -8,6 +10,39 @@
 #include "utils/ollama/ollama.h"
 #include "utils/gemini/gemini.h"
 
+
+std::unordered_map<dpp::snowflake, dpp::message> protect_user_message_cache;
+std::mutex cache_mutex;
+
+// Function to add message to cache if it is from the specified user
+void cache_protect_user_message(const dpp::message& msg, const std::string& protect_user_id) {
+    std::cout << fmt::format("Checking auth: {} and protect: {}\n", msg.author.id.str(), protect_user_id);
+    if (msg.author.id.str() == protect_user_id) {
+        std::cout << "Adding message to protection cache!\n";
+        std::lock_guard<std::mutex> lock(cache_mutex);
+        protect_user_message_cache[msg.id] = msg;
+    }
+}
+
+// Function to get message from cache
+bool get_cached_protect_user_message(dpp::snowflake id, dpp::message& msg) {
+    std::lock_guard<std::mutex> lock(cache_mutex);
+    auto it = protect_user_message_cache.find(id);
+    if (it != protect_user_message_cache.end()) {
+        msg = it->second;
+        return true;
+    } else
+    {
+        std::cout << fmt::format("Message with id {} not found in the cache.\n", id);
+    }
+    return false;
+}
+
+// Function to remove message from cache
+void remove_cached_protect_user_message(dpp::snowflake id) {
+    std::lock_guard<std::mutex> lock(cache_mutex);
+    protect_user_message_cache.erase(id);
+}
 
 void validateEnvironmentVariables() {
     std::vector<std::string> required_env_vars = {
@@ -18,7 +53,9 @@ void validateEnvironmentVariables() {
             "GUILD_ID",
             "REMOVE_REACTION_MAPPINGS",
             "GEMINI_API_KEY",
-            "GEMINI_API_URL"
+            "GEMINI_API_URL",
+            "PROTECT_USER_MESSAGES_ID",
+            "PROTECT_USER_MESSAGES"
     };
 
     for (const auto &var: required_env_vars) {
@@ -57,6 +94,9 @@ int main(const int argc, char *argv[]) {
     );
     auto environment = EnvLoader::getEnvValue("ENV");
     auto removeReactionMappings = nlohmann::json::parse(EnvLoader::getEnvValue("REMOVE_REACTION_MAPPINGS"));
+    auto protectUserMessagesId = EnvLoader::getEnvValue("PROTECT_USER_MESSAGES_ID");
+    int protectUserMessages = std::stoi(EnvLoader::getEnvValue("PROTECT_USER_MESSAGES"));
+
 
     bot.on_log(dpp::utility::cout_logger());
 
@@ -66,8 +106,11 @@ int main(const int argc, char *argv[]) {
         processSlashCommand(bot, event, songQueue, ollamaApi);
     });
 
-    bot.on_message_create([&bot, &geminiApi](const dpp::message_create_t &event) {
+    bot.on_message_create([&bot, &geminiApi, &protectUserMessagesId, protectUserMessages](const dpp::message_create_t &event) {
         if (event.msg.author.is_bot()) return;
+
+        if (protectUserMessages)
+            cache_protect_user_message(event.msg, protectUserMessagesId);
 
         nlohmann::json channel_ids_json = nlohmann::json::parse(EnvLoader::getEnvValue("IMAGE_FILTER_CHANNELS"));
         nlohmann::json users_to_check = nlohmann::json::parse(EnvLoader::getEnvValue("IMAGE_FILTER_USERS"));
@@ -244,15 +287,14 @@ int main(const int argc, char *argv[]) {
     bot.on_guild_member_update([&bot](const dpp::guild_member_update_t &event) {
         if (event.updated.get_user()->global_name == "etchris" && event.updated.get_nickname() != "etchris") {
             bot.guild_get_member(
-                    event.updating_guild->id,
+                    event.updating_guild.id,
                     event.updated.get_user()->id,
                     [&bot](const dpp::confirmation_callback_t &callback) {
                         if (callback.is_error()) {
                             bot.log(dpp::ll_error, fmt::format("Failed to get the guild user: {}",
                                                                callback.get_error().message));
                         } else {
-                            const auto *target_user = std::get_if<dpp::guild_member>(&callback.value);
-                            if (target_user) {
+                            if (const auto *target_user = std::get_if<dpp::guild_member>(&callback.value)) {
                                 dpp::guild_member edited_user = *target_user;
                                 edited_user.set_nickname("etchris");
                                 bot.guild_edit_member(edited_user);
@@ -321,6 +363,40 @@ int main(const int argc, char *argv[]) {
         if (!songQueue.isEmpty()) {
             auto [request, info] = songQueue.nextRequest();
             stream_audio_to_discord(bot, request, info);
+        }
+    });
+
+    bot.on_message_delete([&bot, protectUserMessagesId, &protectUserMessages](const dpp::message_delete_t &event) {
+        if (!protectUserMessages) return;
+        bot.log(dpp::ll_debug, "erm");
+        dpp::message cached_message;
+        if (get_cached_protect_user_message(event.id, cached_message)) {
+            bot.log(dpp::ll_info, "Message by the target user detected as deleted. Resending...");
+
+            // Resend the message to the same channel
+            auto content = cached_message.content;
+
+            if (cached_message.author.id.str() == protectUserMessagesId)
+            {
+                content = fmt::format("{} Said:\n{}", cached_message.author.username, content);
+            }
+            dpp::message message(cached_message.channel_id, content);
+            message.stickers = cached_message.stickers;
+            message.embeds = cached_message.embeds;
+            message.attachments = cached_message.attachments;
+            bot.message_create(message, [&bot, &cached_message, &message](const dpp::confirmation_callback_t &send_callback) {
+                if (send_callback.is_error()) {
+                    bot.log(dpp::ll_error, fmt::format("Failed to resend message: {}", send_callback.get_error().message));
+                } else {
+                    bot.log(dpp::ll_info, "Successfully resent the message.");
+                    auto sent_message = std::get<dpp::message>(send_callback.value);
+                    bot.log(dpp::ll_debug, fmt::format("adding {} to cache.", sent_message.id));
+                    cache_protect_user_message(sent_message, sent_message.author.id.str());
+                }
+            });
+
+            // Remove the original message from the cache
+            remove_cached_protect_user_message(event.id);
         }
     });
 

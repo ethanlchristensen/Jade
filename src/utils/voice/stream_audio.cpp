@@ -12,7 +12,7 @@ void stream_audio_to_discord(dpp::cluster &bot, SongRequest song, SongInfo songI
     if (!song.filter.empty()) data += fmt::format(" -vn -filter_complex {} pipe:", song.filter);
     else data += " pipe:";
 
-    dpp::voiceconn *voice_conn = song.event.from->get_voice(song.event.command.guild_id);
+    dpp::voiceconn *voice_conn = song.event.from()->get_voice(song.event.command.guild_id);
     dpp::discord_voice_client *voice_client = (voice_conn) ? voice_conn->voiceclient : nullptr;
 
     if (voice_client == nullptr) {

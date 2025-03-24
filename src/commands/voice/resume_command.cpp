@@ -10,7 +10,7 @@ dpp::slashcommand resume_command()
 
 void resume_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
 {
-    dpp::voiceconn *v = event.from->get_voice(event.command.guild_id);
+    dpp::voiceconn *v = event.from()->get_voice(event.command.guild_id);
 
     if (!v || !v->voiceclient)
     {

@@ -22,6 +22,6 @@ static std::map<std::string, std::string> TEST_FILTERS = {
 };
 
 dpp::slashcommand play_test_command();
-void play_test_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::string& query, std::string& filter, JadeQueue &queue);
+void play_test_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::string& query, const std::string& filter, JadeQueue &queue);
 
 #endif

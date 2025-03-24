@@ -1,5 +1,5 @@
-#include <fstream>
 #include "utils/jade_util.h"
+
 
 #ifdef _WIN32
 inline FILE* platform_popen(const char* command, const char* mode) {
@@ -10,12 +10,13 @@ inline int platform_pclose(FILE* stream) {
 }
 #else
 inline FILE* platform_popen(const char* command, const char* mode) {
-        return popen(command, mode);
-    }
-    inline int platform_pclose(FILE* stream) {
-        return pclose(stream);
-    }
+    return popen(command, mode);
+}
+inline int platform_pclose(FILE* stream) {
+    return pclose(stream);
+}
 #endif
+
 
 std::vector<std::string> devMessages = {
         "Engines warming up... Dev in progress.",
@@ -226,8 +227,18 @@ std::string secondsToHHMMSS(int total_seconds) {
 }
 
 std::string encode_to_base64(const std::string& data) {
-    std::string encoded = cppcodec::base64_rfc4648::encode(data);
-    return encoded;
+#ifdef _WIN32
+    return base64::encode(data);
+#else
+    base64_encodestate state;
+    base64_init_encodestate(&state);
+
+    std::vector<char> output(data.size() * 2);  // Allocate buffer for output
+    int count = base64_encode_block(data.c_str(), data.size(), output.data(), &state);
+    count += base64_encode_blockend(output.data() + count, &state);
+
+    return std::string(output.data(), count);
+#endif
 }
 
 std::string extractFirstFrameFromVideo(const std::string& videoUrl) {

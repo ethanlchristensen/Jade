@@ -10,7 +10,7 @@ dpp::slashcommand skip_command()
 
 void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event, JadeQueue& queue)
 {
-    dpp::voiceconn *v = event.from->get_voice(event.command.guild_id);
+    dpp::voiceconn *v = event.from()->get_voice(event.command.guild_id);
 
     if (v && v->voiceclient)
     {

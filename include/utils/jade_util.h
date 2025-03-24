@@ -9,7 +9,16 @@
 #include <iostream>
 #include <curl/curl.h>
 #include <fmt/format.h>
+#include <fstream>
+#ifdef _WIN32
 #include <cppcodec/base64_rfc4648.hpp>
+using base64 = cppcodec::base64_rfc4648;
+#else
+extern "C" {
+#include <b64/cencode.h>
+}
+#include <sstream>
+#endif
 
 extern std::vector<std::string> devMessages;
 extern std::vector<std::string> prodMessages;

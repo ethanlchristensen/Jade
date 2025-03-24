@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     libsodium-dev \
     libopus-dev \
+    libb64-dev \
     ffmpeg \
     libspdlog-dev \
     opus-tools \
@@ -33,16 +34,8 @@ RUN apt-get update && apt-get install -y \
 # Install yt-dlp via pip
 RUN python3 -m pip install --break-system-packages --no-cache-dir yt-dlp
 
-# Clone, build, and install cppcodec
-RUN git clone https://github.com/tplgy/cppcodec.git && \
-    cd cppcodec && \
-    mkdir build && cd build && \
-    cmake .. && \
-    make && make install && \
-    cd .. && rm -rf cppcodec
-
 # Download and install DPP
-RUN wget -O dpp.deb https://github.com/brainboxdotcc/DPP/releases/download/v10.0.29/libdpp-10.0.29-linux-rpi-arm64.deb && \
+RUN wget -O dpp.deb https://github.com/brainboxdotcc/DPP/releases/download/v10.1.2/libdpp-10.1.2-linux-rpi-arm64.deb && \
     dpkg -i dpp.deb && \
     rm dpp.deb
 
