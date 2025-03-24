@@ -10,3 +10,4 @@ GEMINI_API_KEY=
 GEMINI_API_URL=https://generativelanguage.googleapis.com/
 PROTECT_USER_MESSAGES_ID=""
 PROTECT_USER_MESSAGE=0
+CLOWN_USER=

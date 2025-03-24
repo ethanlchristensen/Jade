@@ -21,6 +21,10 @@ static std::map<std::string, std::string> FILTERS = {
 };
 
 dpp::slashcommand play_command();
+<<<<<<< HEAD
 void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::string& query, const std::string& filter, JadeQueue &queue);
+=======
+void play_process(dpp::cluster &bot, const dpp::slashcommand_t& event, std::string& query, std::string& filter, JadeQueue &queue);
+>>>>>>> 486a1f2a5cfff4b09bb91728009f9ad4bf5a3015
 
 #endif

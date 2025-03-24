@@ -19,7 +19,9 @@ void join_process(dpp::cluster &bot, const dpp::slashcommand_t &event)
 
     dpp::guild *g = dpp::find_guild(event.command.guild_id);
 
-    if (!g->connect_member_voice(event.command.get_issuing_user().id))
+    bool connected = g->connect_member_voice(event.command.get_issuing_user().id);
+
+    if (!connected)
     {
         dpp::message error_msg(event.command.channel_id,
                                "I would love to play some music, but don't you want to listen too?", dpp::mt_default);

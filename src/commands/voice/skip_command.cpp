@@ -16,7 +16,7 @@ void skip_process(dpp::cluster &bot, const dpp::slashcommand_t &event, JadeQueue
     {
         if (v->voiceclient->is_playing())
         {
-            v->voiceclient->stop_audio();
+            v->voiceclient->skip_to_next_marker();
             dpp::message success_msg(event.command.channel_id, "Skipped the song!", dpp::mt_default);
             event.reply(success_msg);
         }
