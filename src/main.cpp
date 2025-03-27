@@ -45,7 +45,7 @@ void validateEnvironmentVariables() {
             "USERS_TO_ID",
             "OLLAMA_ENDPOINT",
             "ENV",
-            "GUILD_ID",
+            "GUILD_IDS",
             "REMOVE_REACTION_MAPPINGS",
             "GEMINI_API_KEY",
             "GEMINI_API_URL",
@@ -203,6 +203,7 @@ int main(const int argc, char *argv[]) {
     nlohmann::json channel_ids_json = nlohmann::json::parse(EnvLoader::getEnvValue("IMAGE_FILTER_CHANNELS"));
     nlohmann::json users_to_check = nlohmann::json::parse(EnvLoader::getEnvValue("IMAGE_FILTER_USERS"));
     std::string clownUserId = EnvLoader::getEnvValue("CLOWN_USER");
+    nlohmann::json guildIds = nlohmann::json::parse(EnvLoader::getEnvValue("GUILD_IDS"));
 
     bot.on_log(dpp::utility::cout_logger());
 
@@ -214,7 +215,29 @@ int main(const int argc, char *argv[]) {
         bot.set_presence(presence);
     });
 
-    bot.on_slashcommand([&bot, &songQueue, &ollamaApi](const dpp::slashcommand_t &event) {
+    bot.on_slashcommand([&bot, &songQueue, &ollamaApi, &guildIds](const dpp::slashcommand_t &event) {
+        bool guild_supported = false;
+        bot.log(dpp::ll_debug, fmt::format("Checking if guild {} is a supported guild.", event.command.guild_id));
+        for (const auto& guild_id : guildIds) {
+            if (event.command.guild_id.str() == guild_id) {
+                guild_supported = true;
+                break;
+            }
+        }
+
+        if (!guild_supported) {
+            dpp::embed embed;
+            embed.set_title("Guild Not Onboarded");
+            embed.set_description("This server is not yet onboarded to use this bot's commands.");
+            embed.set_color(0xFF0000); // Red color
+            embed.add_field("What to do", "Contact the creator to get your guild up and running!");
+            embed.set_thumbnail("https://i.imgur.com/VARKMtQ.png");
+            embed.set_timestamp(time(nullptr));
+
+            event.reply(dpp::message().add_embed(embed).set_flags(dpp::m_ephemeral));
+            return;
+        }
+
         processSlashCommand(bot, event, songQueue, ollamaApi);
     });
 
