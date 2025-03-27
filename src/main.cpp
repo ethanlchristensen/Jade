@@ -217,7 +217,6 @@ int main(const int argc, char *argv[]) {
 
     bot.on_slashcommand([&bot, &songQueue, &ollamaApi, &guildIds](const dpp::slashcommand_t &event) {
         bool guild_supported = false;
-        bot.log(dpp::ll_debug, fmt::format("Checking if guild {} is a supported guild.", event.command.guild_id));
         for (const auto& guild_id : guildIds) {
             if (event.command.guild_id.str() == guild_id) {
                 guild_supported = true;
