@@ -9,7 +9,11 @@ dpp::embed NowPlayingEmbed(const SongRequest& song, const SongInfo& songInfo) {
     embed.add_field("Artist", songInfo.artistUrl.empty()? "Unknown" : fmt::format("[{}]({})", songInfo.artist, songInfo.artistUrl), false);
     embed.add_field("Duration", secondsToHHMMSS(songInfo.duration), false);
     embed.add_field("Filter", song.filter.empty() ? "No Filter" : song.filter);
-    embed.set_footer(dpp::embed_footer().set_text("/play by " + song.event.command.usr.global_name).set_icon(song.event.command.usr.get_avatar_url()));
+    std::string avatarUrl = song.event.command.member.get_avatar_url();
+    if (avatarUrl.empty()) {
+        avatarUrl = song.event.command.usr.get_avatar_url();
+    }
+    embed.set_footer(dpp::embed_footer().set_text("/play by " + song.event.command.member.get_nickname()).set_icon(avatarUrl));
     return embed;
 }
 
@@ -21,16 +25,27 @@ dpp::embed AddedToQueueEmbed(const SongRequest& song, const SongInfo& songInfo) 
     embed.add_field("Title", fmt::format("[{}]({})", songInfo.title, song.query), false);
     embed.add_field("Artist", fmt::format("[{}]({})", songInfo.artist, songInfo.artistUrl), false);
     embed.add_field("Filter", song.filter.empty() ? "No Filter" : song.filter);
-    embed.set_footer(dpp::embed_footer().set_text("/play by " + song.event.command.usr.global_name).set_icon(song.event.command.usr.get_avatar_url()));
+    std::string avatarUrl = song.event.command.member.get_avatar_url();
+    if (avatarUrl.empty()) {
+        avatarUrl = song.event.command.usr.get_avatar_url();
+    }
+    embed.set_footer(dpp::embed_footer().set_text("/play by " + song.event.command.member.get_nickname()).set_icon(avatarUrl));
     return embed;
 }
 
 dpp::embed ChatEmbed(const dpp::slashcommand_t& event, const std::string& model, const std::string& message, const std::string& response) {
     dpp::embed embed = dpp::embed();
+    event.from()->log(dpp::ll_debug, "ERM, got the finna user!");
     embed.set_title("Chat Response");
-    embed.add_field(event.command.usr.global_name, message);
+    embed.add_field(event.command.usr.username, message);
     embed.add_field(model, response);
-    embed.set_footer(dpp::embed_footer().set_text("/chat by " + event.command.usr.global_name).set_icon(event.command.usr.get_avatar_url()));
+
+    std::string avatarUrl = event.command.member.get_avatar_url();
+    if (avatarUrl.empty()) {
+        avatarUrl = event.command.usr.get_avatar_url();
+    }
+
+    embed.set_footer(dpp::embed_footer().set_text("/chat by " + event.command.member.get_nickname()).set_icon(avatarUrl));
     return embed;
 }
 
@@ -38,7 +53,6 @@ dpp::embed DescriptionEmbed(const dpp::slashcommand_t& event, const std::string&
     dpp::embed embed = dpp::embed();
     embed.set_title("Describe");
     embed.set_image(imageUrl);
-
 
     // field can only be 1024 characters
     size_t maxFieldLength = 1024;
@@ -63,8 +77,11 @@ dpp::embed DescriptionEmbed(const dpp::slashcommand_t& event, const std::string&
         }
         pos++;
     }
-
-    embed.set_footer(dpp::embed_footer().set_text("/describe by " + event.command.usr.global_name).set_icon(event.command.usr.get_avatar_url()));
+    std::string avatarUrl = event.command.member.get_avatar_url();
+    if (avatarUrl.empty()) {
+        avatarUrl = event.command.usr.get_avatar_url();
+    }
+    embed.set_footer(dpp::embed_footer().set_text("/describe by " + event.command.member.get_nickname()).set_icon(avatarUrl));
     return embed;
 }
 
