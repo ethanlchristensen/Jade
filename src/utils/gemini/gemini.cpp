@@ -71,20 +71,41 @@ GeminiAPI::constructPayload(const std::string& model, const ChatMessage& message
     return payload.dump();
 }
 
+// ... existing code ...
+
 std::string
 GeminiAPI::checkImage(const std::string& model, const std::string& imageData) {
+    // Validate input data first
+    if (imageData.empty()) {
+        return "Error: No image data provided";
+    }
+
     // Convert image data to base64
     std::string base64Image = encode_to_base64(imageData);
 
+    // Validate base64 conversion
+    if (base64Image.empty()) {
+        return "Error: Failed to encode image to base64";
+    }
+
     ChatMessage message;
     message.role = "user";
-    message.content = "Is this image appropriate for all audiences? Please analyze this image and determine if it contains any inappropriate content such as adult material, violence, gore, hate speech, or other NSFW elements. Also check if that image may contain API keys. Respond with 'INAPPROPRIATE' if the image is unsuitable, or 'APPROPRIATE' if the image is safe for all audiences.";
+    message.content = "Is this image or animated content appropriate for all audiences? Please analyze this media and determine if it contains any inappropriate content such as adult material, violence, gore, hate speech, or other NSFW elements. Also check if that image may contain API keys. Respond with 'INAPPROPRIATE' if the media is unsuitable, or 'APPROPRIATE' if the media is safe for all audiences.";
     message.images.push_back(base64Image);
 
     std::string response = sendMessage(model, message, false);
 
     try {
         nlohmann::json response_json = nlohmann::json::parse(response);
+
+        // Check for API errors first
+        if (response_json.contains("error")) {
+            std::string error_message = "API Error: ";
+            if (response_json["error"].contains("message")) {
+                error_message += response_json["error"]["message"].get<std::string>();
+            }
+            return error_message;
+        }
 
         // Extract text from Gemini response format
         if (response_json.contains("candidates") &&
@@ -96,7 +117,8 @@ GeminiAPI::checkImage(const std::string& model, const std::string& imageData) {
 
             return response_json["candidates"][0]["content"]["parts"][0]["text"];
         }
-        std::cout << response_json << "\n";
+
+        std::cout << "Full response: " << response_json.dump(2) << "\n";
         return "Error parsing Gemini response";
     } catch (const std::exception& e) {
         return "Error analyzing image: " + std::string(e.what());

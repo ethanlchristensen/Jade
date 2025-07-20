@@ -35,7 +35,6 @@ dpp::embed AddedToQueueEmbed(const SongRequest& song, const SongInfo& songInfo) 
 
 dpp::embed ChatEmbed(const dpp::slashcommand_t& event, const std::string& model, const std::string& message, const std::string& response) {
     dpp::embed embed = dpp::embed();
-    event.from()->log(dpp::ll_debug, "ERM, got the finna user!");
     embed.set_title("Chat Response");
     embed.add_field(event.command.usr.username, message);
     embed.add_field(model, response);

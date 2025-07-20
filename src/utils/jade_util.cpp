@@ -1,13 +1,18 @@
 #include "utils/jade_util.h"
+#include <algorithm>
+#include <chrono>
 
 
 #ifdef _WIN32
-inline FILE* platform_popen(const char* command, const char* mode) {
+
+inline FILE *platform_popen(const char *command, const char *mode) {
     return _popen(command, mode);
 }
-inline int platform_pclose(FILE* stream) {
+
+inline int platform_pclose(FILE *stream) {
     return _pclose(stream);
 }
+
 #else
 inline FILE* platform_popen(const char* command, const char* mode) {
     return popen(command, mode);
@@ -18,58 +23,32 @@ inline int platform_pclose(FILE* stream) {
 #endif
 
 
-std::vector<std::string> devMessages = {
-        "Engines warming up... Dev in progress.",
-        "Stars aligning. Dev mode active!",
-        "Coding an update!",
-        "Building the next mission!",
-        "Navigating dev space. Stay tuned!",
-        "In dev mode. Prepare for lift-off!",
-        "Systems upgrading. Dev phase on!",
-        "Cosmic code in the works!",
-        "Core systems in dev!",
-        "Dev mode engaged. Updates soon!",
-        "Crafting the future in dev!",
-        "Cosmic engine in beta. Hold tight!",
-        "Exploring deep code. Stay tuned!",
-        "In the lab, refining things.",
-        "Countdown to release. Dev in progress!",
-        "Coding at light speed!",
-        "Mission control: In dev.",
-        "Future in the lab!",
-        "Cosmic experiments in progress!",
-        "In dev mode. Stay tuned!"
-};
+std::vector<std::string> devMessages = {"Engines warming up... Dev in progress.", "Stars aligning. Dev mode active!",
+                                        "Coding an update!", "Building the next mission!",
+                                        "Navigating dev space. Stay tuned!", "In dev mode. Prepare for lift-off!",
+                                        "Systems upgrading. Dev phase on!", "Cosmic code in the works!",
+                                        "Core systems in dev!", "Dev mode engaged. Updates soon!",
+                                        "Crafting the future in dev!", "Cosmic engine in beta. Hold tight!",
+                                        "Exploring deep code. Stay tuned!", "In the lab, refining things.",
+                                        "Countdown to release. Dev in progress!", "Coding at light speed!",
+                                        "Mission control: In dev.", "Future in the lab!",
+                                        "Cosmic experiments in progress!", "In dev mode. Stay tuned!"};
 
 
-std::vector<std::string> prodMessages = {
-        "Ready for launch!",
-        "Systems online. Live!",
-        "Mission complete. Operational!",
-        "Engines powered. At service!",
-        "Live and ready!",
-        "All systems go. Live!",
-        "Mission active!",
-        "Ready for the stars. In orbit!",
-        "Operational!",
-        "In full swing!",
-        "Entered the cosmos!",
-        "Mission success! On standby.",
-        "Launched. Let’s go!",
-        "All systems functioning. Live!",
-        "Fully operational. Let’s go!",
-        "At command. Ready for mission!",
-        "Online, exploring stars!",
-        "Lift-off complete. Live!",
-        "Code’s solid. Ready!",
-        "Operational and engaged!"
-};
+std::vector<std::string> prodMessages = {"Ready for launch!", "Systems online. Live!", "Mission complete. Operational!",
+                                         "Engines powered. At service!", "Live and ready!", "All systems go. Live!",
+                                         "Mission active!", "Ready for the stars. In orbit!", "Operational!",
+                                         "In full swing!", "Entered the cosmos!", "Mission success! On standby.",
+                                         "Launched. Let’s go!", "All systems functioning. Live!",
+                                         "Fully operational. Let’s go!", "At command. Ready for mission!",
+                                         "Online, exploring stars!", "Lift-off complete. Live!", "Code’s solid. Ready!",
+                                         "Operational and engaged!"};
 
 
-std::string executeCommand(const std::string& command) {
+std::string executeCommand(const std::string &command) {
     std::array<char, 128> buffer{};
     std::string result;
-    FILE* pipe = platform_popen(command.c_str(), "r");
+    FILE *pipe = platform_popen(command.c_str(), "r");
 
     if (!pipe) {
         throw std::runtime_error("failed to open the pipe!");
@@ -127,7 +106,7 @@ std::string APIClient::GET(const std::string &url, const std::string &authToken)
 }
 
 std::string APIClient::POST(const std::string &url, const std::string &data, const std::string &authToken,
-                 const std::vector<std::string> &additionalHeaders) {
+                            const std::vector<std::string> &additionalHeaders) {
     std::cout << "POST called!\n";
     CURL *curl = curl_easy_init();
     if (!curl) {
@@ -149,7 +128,7 @@ std::string APIClient::POST(const std::string &url, const std::string &data, con
     }
 
     // Add any additional headers
-    for (const auto &header : additionalHeaders) {
+    for (const auto &header: additionalHeaders) {
         headers = curl_slist_append(headers, header.c_str());
     }
 
@@ -192,15 +171,15 @@ std::string APIClient::download_image(const std::string &url) {
     return imageData;
 }
 
-size_t APIClient::WriteCallback(void* contents, size_t size, size_t nmemb, std::string* out) {
+size_t APIClient::WriteCallback(void *contents, size_t size, size_t nmemb, std::string *out) {
     size_t totalSize = size * nmemb;
-    out->append((char*)contents, totalSize);
+    out->append((char *) contents, totalSize);
     return totalSize;
 }
 
-size_t APIClient::WriteCallbackToVector(void* contents, size_t size, size_t nmemb, std::vector<char>* out) {
+size_t APIClient::WriteCallbackToVector(void *contents, size_t size, size_t nmemb, std::vector<char> *out) {
     size_t totalSize = size * nmemb;
-    out->insert(out->end(), (char*)contents, (char*)contents + totalSize);
+    out->insert(out->end(), (char *) contents, (char *) contents + totalSize);
     return totalSize;
 }
 
@@ -226,7 +205,7 @@ std::string secondsToHHMMSS(int total_seconds) {
     return result;
 }
 
-std::string encode_to_base64(const std::string& data) {
+std::string encode_to_base64(const std::string &data) {
 #ifdef _WIN32
     return base64::encode(data);
 #else
@@ -242,28 +221,28 @@ std::string encode_to_base64(const std::string& data) {
 }
 
 std::string extractFirstFrameFromVideo(const std::string& videoUrl) {
-    // Create a temporary file for the video with a unique name in the current directory
-    std::string tempVideoPath = "temp_video_" + std::to_string(time(nullptr)) + ".mp4";
+    // Create a temporary file for the video/gif with a unique name in the current directory
+    std::string tempVideoPath = "temp_media_" + std::to_string(time(nullptr));
     std::string tempFramePath = "temp_frame_" + std::to_string(time(nullptr)) + ".jpg";
 
     try {
-        // Download the video
-        int downloadResult = std::system(("curl -s -o \"" + tempVideoPath + "\" \"" + videoUrl + "\"").c_str());
+        // Download the video/gif (keeping all query parameters)
+        int downloadResult = std::system(("curl -s -L -o \"" + tempVideoPath + "\" \"" + videoUrl + "\"").c_str());
         if (downloadResult != 0) {
-            throw std::runtime_error("Failed to download video file");
+            throw std::runtime_error("Failed to download media file");
         }
 
         // Check if the file exists
-        std::ifstream videoFile(tempVideoPath);
-        if (!videoFile.good()) {
-            throw std::runtime_error("Video file was not created or is not accessible");
+        std::ifstream mediaFile(tempVideoPath);
+        if (!mediaFile.good()) {
+            throw std::runtime_error("Media file was not created or is not accessible");
         }
-        videoFile.close();
+        mediaFile.close();
 
-        // Extract the first frame using FFmpeg
+        // Extract the first frame using FFmpeg (works for both videos and GIFs)
         int ffmpegResult = std::system(("ffmpeg -i \"" + tempVideoPath + "\" -vframes 1 \"" + tempFramePath + "\" -y").c_str());
         if (ffmpegResult != 0) {
-            throw std::runtime_error("FFmpeg failed to extract frame from video");
+            throw std::runtime_error("FFmpeg failed to extract frame from media file");
         }
 
         // Check if the frame file exists
@@ -283,7 +262,7 @@ std::string extractFirstFrameFromVideo(const std::string& videoUrl) {
         return image_data;
     } catch (const std::exception& e) {
         // Log the error
-        std::cerr << "Error processing video: " << e.what() << std::endl;
+        std::cerr << "Error processing media: " << e.what() << std::endl;
 
         // Clean up any temporary files that might have been created
         std::remove(tempVideoPath.c_str());
